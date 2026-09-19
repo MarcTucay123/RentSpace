@@ -16,7 +16,7 @@ export function UnitCreateForm() {
 
   return (
     <section className="rounded-[1.35rem] border border-[var(--color-dormmate-border)] bg-white p-4 shadow-sm sm:p-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-dormmate-primary)]">
             Add Unit
@@ -26,9 +26,6 @@ export function UnitCreateForm() {
             Create the top-level unit first. Rooms and bed spaces are managed after the unit is created.
           </p>
         </div>
-        <Link href="/landlord/units" className="inline-flex rounded-[14px] border border-[var(--color-dormmate-border)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-dormmate-primary)] shadow-sm transition hover:bg-[var(--color-dormmate-surface)]">
-          Cancel Unit
-        </Link>
       </div>
 
       <form action={action} className="mt-6 space-y-4">
@@ -80,13 +77,18 @@ export function UnitCreateForm() {
           {state.errors?.status?.[0] ? <p className="text-sm text-red-600">{state.errors.status[0]}</p> : null}
         </label>
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-[14px] bg-[var(--color-dormmate-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {pending ? "Creating unit..." : "Create Unit"}
-        </button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Link href="/landlord/units" className="inline-flex rounded-[14px] border border-[var(--color-dormmate-primary)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-dormmate-primary)] shadow-sm transition hover:bg-[var(--color-dormmate-surface)]">
+            Cancel Unit
+          </Link>
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-[14px] bg-[var(--color-dormmate-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {pending ? "Creating unit..." : "Create Unit"}
+          </button>
+        </div>
       </form>
     </section>
   );

@@ -9,12 +9,13 @@ import { getUnitCategoryLabel, type UnitFormState, type UnitListItem } from "@/l
 
 type UnitEditFormProps = {
   unit: UnitListItem;
+  onCancel?: () => void;
   onSuccess?: () => void;
 };
 
 const initialState: UnitFormState = {};
 
-export function UnitEditForm({ unit, onSuccess }: UnitEditFormProps) {
+export function UnitEditForm({ unit, onCancel, onSuccess }: UnitEditFormProps) {
   async function saveAndClose(previousState: UnitFormState, formData: FormData) {
     const result = await updateUnit(previousState, formData);
     if (result.success) onSuccess?.();
@@ -70,13 +71,16 @@ export function UnitEditForm({ unit, onSuccess }: UnitEditFormProps) {
           {state.errors?.status?.[0] ? <p className="text-sm text-red-600">{state.errors.status[0]}</p> : null}
         </label>
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-[14px] bg-[var(--color-dormmate-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {pending ? "Saving unit..." : "Save Unit"}
-        </button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <button type="button" onClick={onCancel} className="rounded-[14px] border border-[var(--color-dormmate-primary)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]">Cancel Edit</button>
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-[14px] bg-[var(--color-dormmate-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {pending ? "Saving unit..." : "Save Changes"}
+          </button>
+        </div>
       </form>
     </section>
   );

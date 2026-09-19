@@ -43,6 +43,7 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
     },
   ]);
   const [question, setQuestion] = useState("");
+  const [suggestionsOpen, setSuggestionsOpen] = useState(true);
   const [pending, startTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -131,14 +132,22 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
 
         <form onSubmit={handleSubmit} className="border-t border-[var(--color-dormmate-border)] p-3 sm:p-4">
           <div className="mb-3 rounded-[14px] bg-[#f5f6f4] p-3">
-            <p className="text-xs font-semibold text-[var(--color-dormmate-primary)]">Select a suggested question to send it instantly, or type your own message below.</p>
-            <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-              {prompts.map((prompt) => (
-                <button key={prompt} type="button" disabled={pending} onClick={() => submitQuestion(prompt)} className="min-w-[220px] rounded-[12px] border border-[var(--color-dormmate-border)] bg-white px-3 py-2 text-left text-xs font-medium leading-5 text-[#1b263b] transition hover:border-[var(--color-dormmate-primary)] hover:bg-[var(--color-dormmate-green-soft)] disabled:opacity-60">
-                  {prompt}
-                </button>
-              ))}
-            </div>
+            <button type="button" aria-expanded={suggestionsOpen} aria-controls="ai-suggested-questions" onClick={() => setSuggestionsOpen((current) => !current)} className="flex w-full items-center justify-between gap-3 text-left text-xs font-semibold text-[var(--color-dormmate-primary)]">
+              <span>{suggestionsOpen ? "Hide suggested questions" : "Show suggested questions"}</span>
+              <span aria-hidden="true" className={`text-base transition-transform ${suggestionsOpen ? "rotate-180" : ""}`}>⌄</span>
+            </button>
+            {suggestionsOpen ? (
+              <div id="ai-suggested-questions" className="mt-2">
+                <p className="text-xs text-[var(--color-dormmate-muted)]">Select a question to send it instantly, or type your own message below.</p>
+                <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                  {prompts.map((prompt) => (
+                    <button key={prompt} type="button" disabled={pending} onClick={() => submitQuestion(prompt)} className="min-w-[220px] rounded-[12px] border border-[var(--color-dormmate-border)] bg-white px-3 py-2 text-left text-xs font-medium leading-5 text-[#1b263b] transition hover:border-[var(--color-dormmate-primary)] hover:bg-[var(--color-dormmate-green-soft)] disabled:opacity-60">
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
           <div className="flex items-end gap-2">
             <textarea

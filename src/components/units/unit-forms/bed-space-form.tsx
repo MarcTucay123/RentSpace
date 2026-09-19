@@ -11,12 +11,13 @@ type BedSpaceFormProps = {
   unit: UnitListItem;
   roomId: string;
   existingBedSpace?: BedSpace;
+  onCancel?: () => void;
   onSuccess?: () => void;
 };
 
 const initialState: UnitFormState = {};
 
-export function BedSpaceForm({ unit, roomId, existingBedSpace, onSuccess }: BedSpaceFormProps) {
+export function BedSpaceForm({ unit, roomId, existingBedSpace, onCancel, onSuccess }: BedSpaceFormProps) {
   const actionFn = existingBedSpace ? updateBedSpace : createBedSpace;
   async function saveAndClose(previousState: UnitFormState, formData: FormData) {
     const result = await actionFn(previousState, formData);
@@ -43,13 +44,16 @@ export function BedSpaceForm({ unit, roomId, existingBedSpace, onSuccess }: BedS
       <TextField label="Rental Rate (Optional)" name="rentalRate" type="number" defaultValue={existingBedSpace?.rental_rate?.toString() ?? ""} error={state.errors?.rentalRate?.[0]} />
       <p className="rounded-[12px] bg-[var(--color-dormmate-surface)] px-3 py-2.5 text-xs leading-5 text-[var(--color-dormmate-muted)]">Availability is automatic: assigning a Tenant marks this bed occupied, and moving the Tenant out makes it available again.</p>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-[14px] bg-[var(--color-dormmate-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        {pending ? "Saving..." : existingBedSpace ? "Save Bed Space" : "Create Bed Space"}
-      </button>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <button type="button" onClick={onCancel} className="rounded-[14px] border border-[var(--color-dormmate-primary)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]">{existingBedSpace ? "Cancel Edit" : "Cancel Bed Space"}</button>
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-[14px] bg-[var(--color-dormmate-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {pending ? "Saving..." : existingBedSpace ? "Save Changes" : "Create Bed Space"}
+        </button>
+      </div>
     </form>
   );
 }

@@ -41,6 +41,7 @@ function getAssignmentOption(tenant: Awaited<ReturnType<typeof getLandlordTenant
     value: `${tenant.assignmentType}:${tenant.unitId}:${tenant.roomId ?? ""}:${tenant.bedSpaceId ?? ""}`,
     label: formatAssignmentLocation(tenant),
     rentalRate,
+    category: tenant.assignmentType,
   };
 }
 
@@ -56,7 +57,7 @@ export default async function LandlordTenantsPage({ searchParams }: TenantsPageP
       if (unit.unit_category === "apartment") {
         return unit.apartment_is_occupied
           ? []
-          : [{ value: `apartment:${unit.id}::`, label: `${unit.unit_name} · ${getUnitCategoryLabel(unit.unit_category)}`, rentalRate: unit.rental_rate }];
+          : [{ value: `apartment:${unit.id}::`, label: `${unit.unit_name} · ${getUnitCategoryLabel(unit.unit_category)}`, rentalRate: unit.rental_rate, category: "apartment" }];
       }
 
       if (unit.unit_category === "room_space") {
@@ -66,6 +67,7 @@ export default async function LandlordTenantsPage({ searchParams }: TenantsPageP
             value: `room_space:${unit.id}:${room.id}:`,
             label: `${unit.unit_name} · Room: ${room.room_number}`,
             rentalRate: room.rental_rate,
+            category: "room_space",
           }));
       }
 
@@ -77,6 +79,7 @@ export default async function LandlordTenantsPage({ searchParams }: TenantsPageP
             value: `bed_space:${unit.id}:${bed.room_id}:${bed.id}`,
             label: `${unit.unit_name} · Room: ${room?.room_number ?? "—"} · ${bed.bed_label}`,
             rentalRate: bed.rental_rate,
+            category: "bed_space",
           };
         });
     });

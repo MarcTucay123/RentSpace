@@ -117,6 +117,32 @@ export function AppShell({ profile, profileAssignmentLabel, title, subtitle, nav
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    const main = document.querySelector<HTMLElement>("[data-portal-main]");
+    if (!main) return;
+    const sections = Array.from(main.querySelectorAll<HTMLElement>(":scope > div > section, :scope > div > article, :scope > section, :scope > article"));
+    if (sections.length === 0) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      sections.forEach((section) => { section.dataset.portalReveal = "visible"; });
+      return;
+    }
+
+    sections.forEach((section, index) => {
+      section.dataset.portalReveal = "ready";
+      section.style.setProperty("--portal-reveal-delay", `${Math.min(index * 70, 280)}ms`);
+    });
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        (entry.target as HTMLElement).dataset.portalReveal = "visible";
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -6%", threshold: 0.08 });
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [pathname]);
+
   return (
     <div className="portal-page min-h-screen px-3 py-3 text-[var(--color-dormmate-text)] sm:px-4 lg:px-[1cm]">
       <PortalAutoRefresh profileId={profile.id} />
@@ -170,7 +196,7 @@ export function AppShell({ profile, profileAssignmentLabel, title, subtitle, nav
           <AccountSection profile={profile} assignmentLabel={profileAssignmentLabel} dark />
         </aside>
 
-        <main className="min-w-0">{children}</main>
+        <main data-portal-main className="min-w-0">{children}</main>
       </div>
 
       <div

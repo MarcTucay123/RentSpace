@@ -171,7 +171,7 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
                           </div>
                         </div>
                         <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
-                          <button type="button" aria-expanded={editingRoomId === room.id} onClick={() => setEditingRoomId((current) => current === room.id ? null : room.id)} className="text-sm font-semibold text-[var(--color-dormmate-primary)] hover:underline">
+                          <button type="button" aria-expanded={editingRoomId === room.id} onClick={() => setEditingRoomId((current) => current === room.id ? null : room.id)} className="rounded-[10px] border border-[var(--color-dormmate-primary)] bg-white px-3 py-2 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]">
                             {editingRoomId === room.id ? "Cancel" : "Edit"}
                           </button>
                           <button type="button" onClick={() => setAddingBedToRoomId(room.id)} className="rounded-[10px] bg-[var(--color-dormmate-primary)] px-3 py-2 text-sm font-semibold text-white hover:opacity-90">Add Bed</button>
@@ -181,7 +181,7 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
 
                       {editingRoomId === room.id ? (
                         <div className="mt-4 rounded-[1rem] border border-[var(--color-dormmate-border)] bg-white p-4">
-                          <RoomForm unit={unit} existingRoom={room} compact onSuccess={() => setEditingRoomId(null)} />
+                          <RoomForm unit={unit} existingRoom={room} compact onCancel={() => setEditingRoomId(null)} onSuccess={() => setEditingRoomId(null)} />
                         </div>
                       ) : null}
 
@@ -205,12 +205,12 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
                                 <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${unit.occupied_bed_space_ids.includes(bedSpace.id) ? "bg-[#fff2df] text-[#b87417]" : bedSpace.status === "available" ? "bg-[var(--color-dormmate-primary)] text-white" : "bg-[#f5f6f4] text-[#415a77]"}`}>
                                   {unit.occupied_bed_space_ids.includes(bedSpace.id) ? "occupied" : bedSpace.status}
                                 </span>
-                                <button type="button" aria-expanded={editingBedSpaceId === bedSpace.id} onClick={() => setEditingBedSpaceId((current) => current === bedSpace.id ? null : bedSpace.id)} className="text-sm font-semibold text-[var(--color-dormmate-primary)] hover:underline">{editingBedSpaceId === bedSpace.id ? "Cancel" : "Edit"}</button>
+                                <button type="button" aria-expanded={editingBedSpaceId === bedSpace.id} onClick={() => setEditingBedSpaceId((current) => current === bedSpace.id ? null : bedSpace.id)} className="rounded-[10px] border border-[var(--color-dormmate-primary)] bg-white px-3 py-2 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]">{editingBedSpaceId === bedSpace.id ? "Cancel" : "Edit"}</button>
                               </div>
                             </div>
                             {editingBedSpaceId === bedSpace.id ? (
                               <div className="mt-4 border-t border-[var(--color-dormmate-border)] pt-4">
-                                <BedSpaceForm unit={unit} roomId={room.id} existingBedSpace={bedSpace} onSuccess={() => setEditingBedSpaceId(null)} />
+                                <BedSpaceForm unit={unit} roomId={room.id} existingBedSpace={bedSpace} onCancel={() => setEditingBedSpaceId(null)} onSuccess={() => setEditingBedSpaceId(null)} />
                               </div>
                             ) : null}
                           </div>
@@ -261,7 +261,7 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
                           type="button"
                           aria-expanded={editingRoomId === room.id}
                           onClick={() => setEditingRoomId((current) => current === room.id ? null : room.id)}
-                          className="text-sm font-semibold text-[var(--color-dormmate-primary)] hover:underline"
+                          className="rounded-[10px] border border-[var(--color-dormmate-primary)] bg-white px-3 py-2 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]"
                         >
                           {editingRoomId === room.id ? "Cancel" : "Edit"}
                         </button>
@@ -269,7 +269,7 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
                     </div>
                     {editingRoomId === room.id ? (
                       <div className="mt-4 border-t border-[var(--color-dormmate-border)] pt-4">
-                        <RoomForm unit={unit} existingRoom={room} compact onSuccess={() => setEditingRoomId(null)} />
+                        <RoomForm unit={unit} existingRoom={room} compact onCancel={() => setEditingRoomId(null)} onSuccess={() => setEditingRoomId(null)} />
                       </div>
                     ) : null}
                   </div>
@@ -282,15 +282,15 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
       </div>
 
       <FormModal open={editingUnit} onClose={() => setEditingUnit(false)} title="Edit Unit" description={`Update ${unit.unit_name}.`}>
-        <UnitEditForm unit={unit} onSuccess={() => setEditingUnit(false)} />
+        <UnitEditForm unit={unit} onCancel={() => setEditingUnit(false)} onSuccess={() => setEditingUnit(false)} />
       </FormModal>
 
       <FormModal open={addingRoom} onClose={() => setAddingRoom(false)} title={unit.unit_category === "bed_space" ? "Add Room and Bed Spaces" : "Add Room"} description={`Create a room inside ${unit.unit_name}.`}>
-        <RoomForm unit={unit} compact onSuccess={() => setAddingRoom(false)} />
+        <RoomForm unit={unit} compact onCancel={() => setAddingRoom(false)} onSuccess={() => setAddingRoom(false)} />
       </FormModal>
 
       <FormModal open={addingBedToRoomId !== null} onClose={() => setAddingBedToRoomId(null)} title="Add Bed Space" description="Create another bed space inside this room.">
-        {addingBedToRoomId ? <BedSpaceForm unit={unit} roomId={addingBedToRoomId} onSuccess={() => setAddingBedToRoomId(null)} /> : null}
+        {addingBedToRoomId ? <BedSpaceForm unit={unit} roomId={addingBedToRoomId} onCancel={() => setAddingBedToRoomId(null)} onSuccess={() => setAddingBedToRoomId(null)} /> : null}
       </FormModal>
 
       <ConfirmationModal open={removalRequest !== null} title={`Remove ${removalRequest?.label ?? "selected records"}?`} description="A room or bed space cannot be removed while a tenant is currently assigned." confirmLabel="Confirm Removal" tone="danger" pending={removing} onCancel={() => setRemovalRequest(null)} onConfirm={confirmRemoval} />

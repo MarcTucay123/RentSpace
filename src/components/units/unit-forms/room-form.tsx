@@ -11,12 +11,13 @@ type RoomFormProps = {
   unit: UnitListItem;
   existingRoom?: Room;
   compact?: boolean;
+  onCancel?: () => void;
   onSuccess?: () => void;
 };
 
 const initialState: UnitFormState = {};
 
-export function RoomForm({ unit, existingRoom, compact = false, onSuccess }: RoomFormProps) {
+export function RoomForm({ unit, existingRoom, compact = false, onCancel, onSuccess }: RoomFormProps) {
   const actionFn = existingRoom ? updateRoom : createRoom;
   async function saveAndClose(previousState: UnitFormState, formData: FormData) {
     const result = await actionFn(previousState, formData);
@@ -87,13 +88,16 @@ export function RoomForm({ unit, existingRoom, compact = false, onSuccess }: Roo
           {state.errors?.status?.[0] ? <p className="text-sm text-red-600">{state.errors.status[0]}</p> : null}
         </label>
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-[14px] bg-[var(--color-dormmate-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {pending ? "Saving room..." : existingRoom ? "Save Room" : "Create Room"}
-        </button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <button type="button" onClick={onCancel} className="rounded-[14px] border border-[var(--color-dormmate-primary)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]">{existingRoom ? "Cancel Edit" : "Cancel Room"}</button>
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-[14px] bg-[var(--color-dormmate-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {pending ? "Saving room..." : existingRoom ? "Save Changes" : "Create Room"}
+          </button>
+        </div>
       </form>
     </section>
   );
