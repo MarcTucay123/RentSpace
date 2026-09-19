@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RentSpace
 
-## Getting Started
+RentSpace is a role-based dormitory and apartment management application built for Lady D's Dormitory and Apartment. It brings tenant onboarding, rental assignments, rent monitoring, payments, maintenance, messaging, notifications, and reports into one workspace.
 
-First, run the development server:
+## Features
+
+- Admin, landlord, and tenant portals
+- Registration and approval workflows
+- Apartment, room, and bed-space management
+- Tenant assignments and occupancy tracking
+- Monthly rental obligations and payment verification
+- GCash proof and manual cash-payment workflows
+- Maintenance requests with photo attachments
+- Direct messaging and notifications
+- Profile photos and account administration
+- Supabase Row Level Security policies and database constraints
+
+## Technology
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Supabase Auth, Postgres, Storage, and Realtime
+
+## Local setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+
+Copy `.env.example` to `.env.local` and provide values from your Supabase project:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+SUPABASE_SERVICE_ROLE_KEY=your_server_only_secret_key
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` is used only by privileged server-side account-management and maintenance scripts. Never expose it in browser code, commit it to Git, or prefix it with `NEXT_PUBLIC_`.
+
+### 3. Prepare Supabase
+
+Apply the SQL migrations in `supabase/migrations` to your Supabase project in filename order. Review the migrations before applying them to an existing database.
+
+### 4. Start development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+## Data reset utility
 
-To learn more about Next.js, take a look at the following resources:
+The repository includes a guarded reset script intended for the configured DormMate/RentSpace Supabase project.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Preview only:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run db:reset-data
+```
 
-## Deploy on Vercel
+Destructive execution requires the explicit confirmation argument and a server-only Supabase secret key:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run db:reset-data -- --execute=RESET-DORMMATE-DATA
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Read and verify `scripts/reset-supabase-data.mjs` before using it. The script is project-ref guarded, but destructive database operations cannot be undone.
+
+## Deployment
+
+The application can be deployed to a Next.js-compatible platform such as Vercel. Configure the same environment variables in the deployment platform and keep `SUPABASE_SERVICE_ROLE_KEY` server-only.
+
+## License
+
+No open-source license has been granted. All rights are reserved by the repository owner.

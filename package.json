@@ -1,14 +1,17 @@
 {
-  "name": "dormmate",
+  "name": "rentspace",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:reset-data": "node scripts/reset-supabase-data.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.113.0",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
