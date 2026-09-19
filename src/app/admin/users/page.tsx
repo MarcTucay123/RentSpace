@@ -27,7 +27,7 @@ export default async function AdminUsersPage({ searchParams }: UsersPageProps) {
   await requireAdminAccess();
   const [params, supabase] = await Promise.all([searchParams, createClient()]);
   const { data, error } = await supabase
-    .from("profiles")
+    .from("users")
     .select("id, first_name, middle_name, last_name, mobile_number, email, role, account_status, profile_photo_url, created_at, updated_at")
     .in("role", ["landlord", "tenant"])
     .order("created_at", { ascending: false });

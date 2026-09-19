@@ -20,7 +20,7 @@ begin
     requested_role := 'tenant';
   end if;
 
-  insert into public.profiles (
+  insert into public.users (
     id, first_name, middle_name, last_name, mobile_number,
     email, role, account_status
   )
@@ -54,7 +54,7 @@ for each row execute function public.handle_new_auth_user();
 -- Backfill Auth users whose earlier signup did not create an app profile.
 -- Only explicit tenant/landlord metadata is accepted; never derive Admin access
 -- from user-editable metadata.
-insert into public.profiles (
+insert into public.users (
   id, first_name, middle_name, last_name, mobile_number,
   email, role, account_status
 )
@@ -70,21 +70,21 @@ select
 from auth.users as u
 where u.raw_user_meta_data ->> 'registration_role' in ('tenant', 'landlord')
   and not exists (
-    select 1 from public.profiles as p where p.id = u.id
+    select 1 from public.users as p where p.id = u.id
   );
 
 insert into public.tenant_profiles (profile_id)
 select p.id
-from public.profiles as p
+from public.users as p
 where p.role = 'tenant'
   and not exists (
     select 1 from public.tenant_profiles as tp where tp.profile_id = p.id
   );
 
 -- Pending Tenants are visible to approved Landlords for review.
-drop policy if exists "profiles_select_pending_tenants_for_landlords" on public.profiles;
-create policy "profiles_select_pending_tenants_for_landlords"
-on public.profiles for select to authenticated
+drop policy if exists "users_select_pending_tenants_for_landlords" on public.users;
+create policy "users_select_pending_tenants_for_landlords"
+on public.users for select to authenticated
 using (
   role = 'tenant'
   and account_status = 'pending'
@@ -92,9 +92,9 @@ using (
 );
 
 -- Approved Tenants remain visible after approval for assignment.
-drop policy if exists "profiles_select_approved_tenants_for_landlords" on public.profiles;
-create policy "profiles_select_approved_tenants_for_landlords"
-on public.profiles for select to authenticated
+drop policy if exists "users_select_approved_tenants_for_landlords" on public.users;
+create policy "users_select_approved_tenants_for_landlords"
+on public.users for select to authenticated
 using (
   role = 'tenant'
   and account_status = 'approved'
@@ -103,9 +103,9 @@ using (
 
 -- Approved Landlords may change only pending Tenant statuses. The separate
 -- protect_landlord_tenant_review trigger enforces field-level immutability.
-drop policy if exists "profiles_review_pending_tenants_by_landlord" on public.profiles;
-create policy "profiles_review_pending_tenants_by_landlord"
-on public.profiles for update to authenticated
+drop policy if exists "users_review_pending_tenants_by_landlord" on public.users;
+create policy "users_review_pending_tenants_by_landlord"
+on public.users for update to authenticated
 using (
   role = 'tenant'
   and account_status = 'pending'
@@ -149,9 +149,9 @@ begin
 end;
 $$;
 
-drop trigger if exists protect_landlord_tenant_review on public.profiles;
+drop trigger if exists protect_landlord_tenant_review on public.users;
 create trigger protect_landlord_tenant_review
-before update on public.profiles
+before update on public.users
 for each row execute function public.protect_landlord_tenant_review();
 
 notify pgrst, 'reload schema';

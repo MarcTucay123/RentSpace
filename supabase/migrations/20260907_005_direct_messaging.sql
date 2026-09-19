@@ -1,7 +1,7 @@
 create table if not exists public.messages (
   id uuid primary key default gen_random_uuid(),
-  sender_profile_id uuid not null references public.profiles(id) on delete cascade,
-  recipient_profile_id uuid not null references public.profiles(id) on delete cascade,
+  sender_profile_id uuid not null references public.users(id) on delete cascade,
+  recipient_profile_id uuid not null references public.users(id) on delete cascade,
   body text not null,
   is_read boolean not null default false,
   read_at timestamptz,
@@ -41,8 +41,8 @@ with check (
   and read_at is null
   and exists (
     select 1
-    from public.profiles as sender
-    join public.profiles as recipient on recipient.id = recipient_profile_id
+    from public.users as sender
+    join public.users as recipient on recipient.id = recipient_profile_id
     where sender.id = auth.uid()
       and sender.account_status = 'approved'
       and recipient.account_status = 'approved'
@@ -73,7 +73,7 @@ set search_path = ''
 as $$
   select exists (
     select 1
-    from public.profiles as p
+    from public.users as p
     where p.id = auth.uid()
       and p.role = 'tenant'
       and p.account_status = 'approved'
@@ -83,9 +83,9 @@ $$;
 revoke all on function public.is_approved_tenant() from public, anon;
 grant execute on function public.is_approved_tenant() to authenticated;
 
-drop policy if exists "profiles_select_approved_landlords_for_tenants" on public.profiles;
-create policy "profiles_select_approved_landlords_for_tenants"
-on public.profiles for select to authenticated
+drop policy if exists "users_select_approved_landlords_for_tenants" on public.users;
+create policy "users_select_approved_landlords_for_tenants"
+on public.users for select to authenticated
 using (
   role = 'landlord'
   and account_status = 'approved'
@@ -103,7 +103,7 @@ declare
 begin
   select trim(p.first_name || ' ' || p.last_name)
   into sender_name
-  from public.profiles as p
+  from public.users as p
   where p.id = new.sender_profile_id;
 
   insert into public.notifications (

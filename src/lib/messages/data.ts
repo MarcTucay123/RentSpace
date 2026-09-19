@@ -20,7 +20,7 @@ export async function getMessagingData(profile: Profile) {
 
   const [contactsResult, messagesResult] = await Promise.all([
     supabase
-      .from("profiles")
+      .from("users")
       .select("id, first_name, last_name, email, role, profile_photo_url")
       .eq("role", contactRole)
       .eq("account_status", "approved")

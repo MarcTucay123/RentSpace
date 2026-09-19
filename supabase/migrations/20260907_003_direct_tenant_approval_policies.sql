@@ -1,9 +1,9 @@
 -- Approved landlords need to see unassigned pending tenants in the current
 -- single-dormitory workflow. Restrict this access to pending tenant rows only.
-drop policy if exists "profiles_select_pending_tenants_for_landlords" on public.profiles;
+drop policy if exists "users_select_pending_tenants_for_landlords" on public.users;
 
-create policy "profiles_select_pending_tenants_for_landlords"
-on public.profiles
+create policy "users_select_pending_tenants_for_landlords"
+on public.users
 for select
 to authenticated
 using (
@@ -13,10 +13,10 @@ using (
 );
 
 -- RLS permits only pending tenant rows to be targeted by an approved landlord.
-drop policy if exists "profiles_review_pending_tenants_by_landlord" on public.profiles;
+drop policy if exists "users_review_pending_tenants_by_landlord" on public.users;
 
-create policy "profiles_review_pending_tenants_by_landlord"
-on public.profiles
+create policy "users_review_pending_tenants_by_landlord"
+on public.users
 for update
 to authenticated
 using (
@@ -65,10 +65,10 @@ begin
 end;
 $$;
 
-drop trigger if exists protect_landlord_tenant_review on public.profiles;
+drop trigger if exists protect_landlord_tenant_review on public.users;
 
 create trigger protect_landlord_tenant_review
-before update on public.profiles
+before update on public.users
 for each row execute function public.protect_landlord_tenant_review();
 
 notify pgrst, 'reload schema';

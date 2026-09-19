@@ -1,7 +1,7 @@
 -- Repair application profiles for prior signups that completed in Auth before
 -- the profile trigger was installed. Only explicit tenant/landlord metadata is
 -- accepted; Admin authorization is never derived from user-editable metadata.
-insert into public.profiles (
+insert into public.users (
   id,
   first_name,
   middle_name,
@@ -24,13 +24,13 @@ from auth.users as u
 where u.raw_user_meta_data ->> 'registration_role' in ('tenant', 'landlord')
   and not exists (
     select 1
-    from public.profiles as p
+    from public.users as p
     where p.id = u.id
   );
 
 insert into public.tenant_profiles (profile_id)
 select p.id
-from public.profiles as p
+from public.users as p
 where p.role = 'tenant'
   and not exists (
     select 1
@@ -39,7 +39,7 @@ where p.role = 'tenant'
   );
 
 create or replace function public.list_pending_registrations(target_role public.user_role)
-returns setof public.profiles
+returns setof public.users
 language plpgsql
 security definer
 set search_path = ''
@@ -59,7 +59,7 @@ begin
 
   return query
   select p.*
-  from public.profiles as p
+  from public.users as p
   where p.role = target_role
     and p.account_status = 'pending'
   order by p.created_at asc;
@@ -103,7 +103,7 @@ begin
     raise exception 'Unsupported registration role';
   end if;
 
-  update public.profiles
+  update public.users
   set account_status = new_status
   where id = target_profile_id
     and role = target_role

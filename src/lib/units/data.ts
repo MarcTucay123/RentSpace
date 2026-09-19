@@ -24,7 +24,7 @@ export async function getUnitsWithStructure() {
         .select("tenant_profile_id, unit_id, room_id, bed_space_id, assignment_type, status")
         .eq("status", "active"),
       supabase.from("tenant_profiles").select("id, profile_id"),
-      supabase.from("profiles").select("id, first_name, last_name, profile_photo_url").eq("role", "tenant").eq("account_status", "approved"),
+      supabase.from("users").select("id, first_name, last_name, profile_photo_url").eq("role", "tenant").eq("account_status", "approved"),
     ]);
 
   if (unitsError || roomsError || bedSpacesError || assignmentsError || tenantProfilesError || tenantIdentitiesError) {

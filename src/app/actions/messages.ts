@@ -21,7 +21,7 @@ export async function sendDirectMessage(_state: MessageFormState, formData: Form
   const supabase = await createClient();
   const expectedRole = profile.role === "landlord" ? "tenant" : "landlord";
   const { data: recipient } = await supabase
-    .from("profiles")
+    .from("users")
     .select("id, role, account_status")
     .eq("id", recipientProfileId)
     .eq("role", expectedRole)

@@ -72,13 +72,15 @@ function validateRegistration(formData: FormData) {
 
 function getServiceRoleClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const secretKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error("Missing server-side Supabase configuration for admin account creation.");
+  if (!supabaseUrl || !secretKey) {
+    throw new Error(
+      "Missing server-side Supabase configuration. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY.",
+    );
   }
 
-  return createAdminClient(supabaseUrl, serviceRoleKey, {
+  return createAdminClient(supabaseUrl, secretKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
@@ -192,7 +194,7 @@ export async function login(
   }
 
   const { data: profile, error: profileError } = await supabase
-    .from("profiles")
+    .from("users")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
@@ -244,7 +246,7 @@ export async function approveLandlord(profileId: string) {
   await requireAdminAccess();
   const supabase = await createClient();
   const { data: updated, error } = await supabase
-    .from("profiles")
+    .from("users")
     .update({ account_status: "approved" })
     .eq("id", profileId)
     .eq("role", "landlord")
@@ -260,7 +262,7 @@ export async function rejectLandlord(profileId: string) {
   await requireAdminAccess();
   const supabase = await createClient();
   const { data: updated, error } = await supabase
-    .from("profiles")
+    .from("users")
     .update({ account_status: "rejected" })
     .eq("id", profileId)
     .eq("role", "landlord")
@@ -276,7 +278,7 @@ export async function approveTenant(profileId: string) {
   await requireLandlordAccess();
   const supabase = await createClient();
   const { error } = await supabase
-    .from("profiles")
+    .from("users")
     .update({ account_status: "approved" })
     .eq("id", profileId)
     .eq("role", "tenant")
@@ -290,7 +292,7 @@ export async function rejectTenant(profileId: string) {
   await requireLandlordAccess();
   const supabase = await createClient();
   const { error } = await supabase
-    .from("profiles")
+    .from("users")
     .update({ account_status: "rejected" })
     .eq("id", profileId)
     .eq("role", "tenant")
@@ -311,7 +313,7 @@ export async function manageUserAccount(
 
   const supabase = await createClient();
   const { data: profile, error: profileError } = await supabase
-    .from("profiles")
+    .from("users")
     .select("id, role, account_status")
     .eq("id", profileId)
     .in("role", ["tenant", "landlord"])
@@ -323,7 +325,7 @@ export async function manageUserAccount(
     const accountStatus = normalizeText(formData.get("accountStatus"));
     if (!["approved", "inactive"].includes(accountStatus)) return { success: false, message: "Select Active or Inactive." };
 
-    const { error } = await supabase.from("profiles").update({ account_status: accountStatus }).eq("id", profileId);
+    const { error } = await supabase.from("users").update({ account_status: accountStatus }).eq("id", profileId);
     if (error) return { success: false, message: error.message };
 
     revalidatePath("/admin/users");
@@ -416,7 +418,7 @@ export async function createAdminAccount(
   }
 
   const supabase = await createClient();
-  const { error: profileError } = await supabase.from("profiles").upsert(
+  const { error: profileError } = await supabase.from("users").upsert(
     {
       id: data.user.id,
       first_name: firstName,
@@ -480,7 +482,7 @@ export async function updateProfile(
   }
 
   const { data: currentProfile, error: profileError } = await supabase
-    .from("profiles")
+    .from("users")
     .select("email")
     .eq("id", user.id)
     .maybeSingle();
@@ -490,7 +492,7 @@ export async function updateProfile(
   }
 
   const { error: updateError } = await supabase
-    .from("profiles")
+    .from("users")
     .update({
       first_name: firstName,
       middle_name: middleName || null,

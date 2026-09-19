@@ -306,7 +306,7 @@ export async function getLandlordTenants(): Promise<LandlordTenantItem[]> {
   const relevantAssignments = assignments.filter((item) => tenantProfiles.some((tenant) => tenant.id === item.tenant_profile_id));
   const [profilesResult, unitContext, obligationsResult] = await Promise.all([
     supabase
-      .from("profiles")
+      .from("users")
       .select("id, first_name, middle_name, last_name, mobile_number, email, account_status, profile_photo_url")
       .in("id", profileIds),
     loadUnitContext(supabase, relevantAssignments),
@@ -430,7 +430,7 @@ export async function getLandlordPayments(): Promise<LandlordPaymentItem[]> {
   const profileIds = unique(tenantProfiles.map((item) => item.profile_id));
 
   const profilesResult = profileIds.length
-    ? await supabase.from("profiles").select("id, first_name, last_name, profile_photo_url").in("id", profileIds)
+    ? await supabase.from("users").select("id, first_name, last_name, profile_photo_url").in("id", profileIds)
     : { data: [], error: null };
 
   if (profilesResult.error) {
@@ -550,7 +550,7 @@ export async function getLandlordMaintenanceRequests(): Promise<LandlordMaintena
   const tenantProfiles = (tenantProfilesResult.data ?? []) as Pick<TenantProfileRow, "id" | "profile_id">[];
   const profileIds = unique(tenantProfiles.map((item) => item.profile_id));
   const profilesResult = profileIds.length
-    ? await supabase.from("profiles").select("id, first_name, last_name, profile_photo_url").in("id", profileIds)
+    ? await supabase.from("users").select("id, first_name, last_name, profile_photo_url").in("id", profileIds)
     : { data: [], error: null };
 
   if (profilesResult.error) {
@@ -636,7 +636,7 @@ export async function getLandlordRentMonitoring(): Promise<LandlordRentMonitorin
   const tenantProfiles = (tenantProfilesResult.data ?? []) as Pick<TenantProfileRow, "id" | "profile_id">[];
   const profileIds = unique(tenantProfiles.map((item) => item.profile_id));
   const profilesResult = profileIds.length
-    ? await supabase.from("profiles").select("id, first_name, last_name, profile_photo_url").in("id", profileIds)
+    ? await supabase.from("users").select("id, first_name, last_name, profile_photo_url").in("id", profileIds)
     : { data: [], error: null };
 
   if (profilesResult.error) {
@@ -708,7 +708,7 @@ export async function getLandlordNotifications(): Promise<LandlordNotificationIt
 export async function getPendingTenantRegistrationCount(): Promise<number> {
   const supabase = await createClient();
   const { count, error } = await supabase
-    .from("profiles")
+    .from("users")
     .select("id", { count: "exact", head: true })
     .eq("role", "tenant")
     .eq("account_status", "pending");

@@ -14,7 +14,7 @@ create type public.payment_method as enum ('cash', 'gcash');
 create type public.payment_verification_status as enum ('pending', 'verified', 'rejected');
 create type public.maintenance_status as enum ('pending', 'acknowledged', 'in_progress', 'resolved');
 
-create table public.profiles (
+create table public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   first_name text not null,
   middle_name text,
@@ -26,14 +26,14 @@ create table public.profiles (
   profile_photo_url text,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
-  constraint profiles_email_format_chk check (
+  constraint users_email_format_chk check (
     email is null or email ~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$'
   )
 );
 
 create table public.properties (
   id uuid primary key default gen_random_uuid(),
-  landlord_id uuid not null references public.profiles(id) on delete restrict,
+  landlord_id uuid not null references public.users(id) on delete restrict,
   property_name text not null,
   property_type text,
   description text,
@@ -48,7 +48,7 @@ create unique index one_active_property_per_landlord_name_idx
 
 create table public.tenant_profiles (
   id uuid primary key default gen_random_uuid(),
-  profile_id uuid not null unique references public.profiles(id) on delete cascade,
+  profile_id uuid not null unique references public.users(id) on delete cascade,
   property_id uuid references public.properties(id) on delete restrict,
   emergency_contact_name text,
   emergency_contact_number text,
@@ -144,7 +144,7 @@ create table public.payments (
   amount numeric(12,2) not null,
   payment_date date not null,
   verification_status public.payment_verification_status not null default 'pending',
-  verified_by uuid references public.profiles(id) on delete restrict,
+  verified_by uuid references public.users(id) on delete restrict,
   verified_at timestamptz,
   rejection_reason text,
   created_at timestamptz not null default timezone('utc', now()),
@@ -163,7 +163,7 @@ create table public.payment_proofs (
   storage_path text not null,
   original_file_name text,
   mime_type text,
-  uploaded_by uuid not null references public.profiles(id) on delete restrict,
+  uploaded_by uuid not null references public.users(id) on delete restrict,
   created_at timestamptz not null default timezone('utc', now())
 );
 
@@ -185,7 +185,7 @@ create table public.maintenance_requests (
 
 create table public.notifications (
   id uuid primary key default gen_random_uuid(),
-  recipient_profile_id uuid not null references public.profiles(id) on delete cascade,
+  recipient_profile_id uuid not null references public.users(id) on delete cascade,
   notification_type text not null,
   title text not null,
   message text not null,
@@ -200,7 +200,7 @@ create table public.notifications (
   )
 );
 
-create index profiles_role_status_idx on public.profiles(role, account_status);
+create index users_role_status_idx on public.users(role, account_status);
 create index properties_landlord_status_idx on public.properties(landlord_id, status);
 create index tenant_profiles_profile_id_idx on public.tenant_profiles(profile_id);
 create index tenant_profiles_property_id_idx on public.tenant_profiles(property_id);
@@ -260,7 +260,7 @@ security definer
 set search_path = ''
 as $$
   select p.role
-  from public.profiles p
+  from public.users p
   where p.id = auth.uid();
 $$;
 
@@ -273,7 +273,7 @@ set search_path = ''
 as $$
   select exists (
     select 1
-    from public.profiles p
+    from public.users p
     where p.id = auth.uid()
       and p.role = 'admin'
       and p.account_status = 'approved'
@@ -289,7 +289,7 @@ set search_path = ''
 as $$
   select exists (
     select 1
-    from public.profiles p
+    from public.users p
     where p.id = auth.uid()
       and p.role = 'landlord'
       and p.account_status = 'approved'
@@ -414,7 +414,7 @@ begin
     requested_property_id := null;
   end if;
 
-  insert into public.profiles (
+  insert into public.users (
     id,
     first_name,
     middle_name,
@@ -461,7 +461,7 @@ declare
   profile_role public.user_role;
 begin
   select p.role into profile_role
-  from public.profiles p
+  from public.users p
   where p.id = new.landlord_id;
 
   if profile_role is distinct from 'landlord' then
@@ -480,7 +480,7 @@ declare
   profile_role public.user_role;
 begin
   select p.role into profile_role
-  from public.profiles p
+  from public.users p
   where p.id = new.profile_id;
 
   if profile_role is distinct from 'tenant' then
@@ -546,7 +546,7 @@ begin
   select p.role, p.account_status, tp.property_id
   into tenant_role, tenant_status, tenant_property_id
   from public.tenant_profiles tp
-  join public.profiles p on p.id = tp.profile_id
+  join public.users p on p.id = tp.profile_id
   where tp.id = new.tenant_profile_id;
 
   if tenant_role is distinct from 'tenant' then
@@ -621,7 +621,7 @@ begin
 
   if new.verification_status in ('verified', 'rejected') and new.verified_by is not null then
     select role into verifier_role
-    from public.profiles
+    from public.users
     where id = new.verified_by;
 
     if verifier_role is distinct from 'landlord' then
@@ -767,7 +767,7 @@ begin
 end;
 $$;
 
-create trigger set_profiles_updated_at before update on public.profiles for each row execute function public.set_updated_at();
+create trigger set_users_updated_at before update on public.users for each row execute function public.set_updated_at();
 create trigger set_properties_updated_at before update on public.properties for each row execute function public.set_updated_at();
 create trigger set_tenant_profiles_updated_at before update on public.tenant_profiles for each row execute function public.set_updated_at();
 create trigger set_units_updated_at before update on public.units for each row execute function public.set_updated_at();
@@ -789,7 +789,7 @@ create trigger trg_validate_payment_proof before insert or update on public.paym
 create trigger trg_validate_maintenance_request_location before insert or update on public.maintenance_requests for each row execute function public.validate_maintenance_request_location();
 create trigger trg_recalculate_rental_obligation_payment_status after insert or update or delete on public.payments for each row execute function public.recalculate_rental_obligation_payment_status();
 
-alter table public.profiles enable row level security;
+alter table public.users enable row level security;
 alter table public.properties enable row level security;
 alter table public.tenant_profiles enable row level security;
 alter table public.units enable row level security;
@@ -802,7 +802,7 @@ alter table public.payment_proofs enable row level security;
 alter table public.maintenance_requests enable row level security;
 alter table public.notifications enable row level security;
 
-revoke all on public.profiles from anon;
+revoke all on public.users from anon;
 revoke all on public.properties from anon;
 revoke all on public.tenant_profiles from anon;
 revoke all on public.units from anon;
@@ -815,7 +815,7 @@ revoke all on public.payment_proofs from anon;
 revoke all on public.maintenance_requests from anon;
 revoke all on public.notifications from anon;
 
-grant select, update on public.profiles to authenticated;
+grant select, update on public.users to authenticated;
 grant select, insert, update on public.properties to authenticated;
 grant select, insert, update on public.tenant_profiles to authenticated;
 grant select, insert, update on public.units to authenticated;
@@ -828,8 +828,8 @@ grant select, insert on public.payment_proofs to authenticated;
 grant select, insert, update on public.maintenance_requests to authenticated;
 grant select, insert, update, delete on public.notifications to authenticated;
 
-create policy "profiles_select_self_admin_or_related_landlord"
-on public.profiles for select to authenticated
+create policy "users_select_self_admin_or_related_landlord"
+on public.users for select to authenticated
 using (
   id = auth.uid()
   or (select public.is_admin())
@@ -839,20 +839,20 @@ using (
       select 1
       from public.tenant_profiles tp
       join public.properties pr on pr.id = tp.property_id
-      where tp.profile_id = profiles.id
+      where tp.profile_id = users.id
         and pr.landlord_id = auth.uid()
     )
   )
 );
 
-create policy "profiles_update_self_or_admin"
-on public.profiles for update to authenticated
+create policy "users_update_self_or_admin"
+on public.users for update to authenticated
 using (id = auth.uid() or (select public.is_admin()))
 with check (
   (
     id = auth.uid()
-    and role = (select role from public.profiles where id = auth.uid())
-    and account_status = (select account_status from public.profiles where id = auth.uid())
+    and role = (select role from public.users where id = auth.uid())
+    and account_status = (select account_status from public.users where id = auth.uid())
   )
   or (select public.is_admin())
 );

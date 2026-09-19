@@ -46,7 +46,7 @@ create table if not exists public.maintenance_attachments (
   storage_path text not null unique,
   original_file_name text not null,
   mime_type text not null,
-  uploaded_by uuid not null references public.profiles(id) on delete restrict,
+  uploaded_by uuid not null references public.users(id) on delete restrict,
   created_at timestamptz not null default timezone('utc', now()),
   constraint maintenance_attachments_mime_chk check (mime_type in ('image/png', 'image/jpeg', 'image/webp'))
 );

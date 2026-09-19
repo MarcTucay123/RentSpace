@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
   const { profile } = await requireAdminAccess();
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("profiles")
+    .from("users")
     .select("id, first_name, last_name, email, role, account_status, created_at")
     .order("created_at", { ascending: false });
 

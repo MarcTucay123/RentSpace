@@ -9,7 +9,7 @@ export async function getAdminNavigationCounts() {
   const supabase = await createClient();
   const landlordApprovals = await safeCount(
     supabase
-      .from("profiles")
+      .from("users")
       .select("id", { count: "exact", head: true })
       .eq("role", "landlord")
       .eq("account_status", "pending"),
@@ -24,7 +24,7 @@ export async function getLandlordNavigationCounts(profileId: string) {
   const [tenantApprovals, pendingPayments, overdueRent, unreadMessages, unreadNotifications] = await Promise.all([
     safeCount(
       supabase
-        .from("profiles")
+        .from("users")
         .select("id", { count: "exact", head: true })
         .eq("role", "tenant")
         .eq("account_status", "pending"),

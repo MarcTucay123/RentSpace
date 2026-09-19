@@ -13,7 +13,7 @@ export default async function AdminLandlordsPage() {
   const supabase = await createClient();
 
   const { data: pendingProfiles, error } = await supabase
-    .from("profiles")
+    .from("users")
     .select("id, first_name, middle_name, last_name, mobile_number, email, role, account_status, profile_photo_url, created_at, updated_at")
     .eq("role", "landlord")
     .eq("account_status", "pending")

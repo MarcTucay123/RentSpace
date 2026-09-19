@@ -24,7 +24,7 @@ export async function getCurrentProfile() {
 
   const supabase = await createClient();
   const { data: profile, error } = await supabase
-    .from("profiles")
+    .from("users")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();

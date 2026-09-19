@@ -129,7 +129,7 @@ async function getAllProfiles(supabase) {
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data } = await retryRead("Unable to read profiles", () =>
       supabase
-        .from("profiles")
+        .from("users")
         .select("id, first_name, middle_name, last_name, email, role")
         .order("id", { ascending: true })
         .range(from, from + PAGE_SIZE - 1),
@@ -261,18 +261,20 @@ async function main() {
   loadLocalEnv();
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const secretKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
   const execute = process.argv.includes(EXECUTE_FLAG);
 
   if (!supabaseUrl) throw new Error("Set NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL.");
-  if (!serviceRoleKey) throw new Error("Set SUPABASE_SERVICE_ROLE_KEY in .env.local or the current shell.");
+  if (!secretKey) {
+    throw new Error("Set SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY) in .env.local or the current shell.");
+  }
 
   const projectRef = projectRefFromUrl(supabaseUrl);
   if (projectRef !== EXPECTED_PROJECT_REF) {
     throw new Error(`Refusing to use project ${projectRef}. Expected ${EXPECTED_PROJECT_REF}.`);
   }
 
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+  const supabase = createClient(supabaseUrl, secretKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 

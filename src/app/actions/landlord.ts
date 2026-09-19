@@ -82,7 +82,7 @@ export async function assignTenantToRentalSpace(
   if (activeTenantAssignment) return { success: false, message: "This Tenant already has an active rental assignment." };
 
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("users")
     .select("id, account_status, role")
     .eq("id", tenantProfile.profile_id)
     .maybeSingle();

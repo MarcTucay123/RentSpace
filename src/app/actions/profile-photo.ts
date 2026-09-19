@@ -57,7 +57,7 @@ export async function uploadProfilePhoto(formData: FormData): Promise<UploadStat
   const { data: publicUrlData } = supabase.storage.from("profile-photos").getPublicUrl(storagePath);
 
   const { error: profileError } = await supabase
-    .from("profiles")
+    .from("users")
     .update({ profile_photo_url: publicUrlData.publicUrl })
     .eq("id", user.id);
 

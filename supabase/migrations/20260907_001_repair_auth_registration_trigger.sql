@@ -15,7 +15,7 @@ begin
     requested_role := 'tenant';
   end if;
 
-  insert into public.profiles (
+  insert into public.users (
     id,
     first_name,
     middle_name,
@@ -62,7 +62,7 @@ for each row execute function public.handle_new_auth_user();
 
 -- Repair Tenant and Landlord Auth users created before this trigger existed.
 -- Never derive Admin access from user-editable signup metadata.
-insert into public.profiles (
+insert into public.users (
   id,
   first_name,
   middle_name,
@@ -85,13 +85,13 @@ from auth.users as u
 where u.raw_user_meta_data ->> 'registration_role' in ('tenant', 'landlord')
   and not exists (
     select 1
-    from public.profiles as p
+    from public.users as p
     where p.id = u.id
   );
 
 insert into public.tenant_profiles (profile_id)
 select p.id
-from public.profiles as p
+from public.users as p
 where p.role = 'tenant'
   and not exists (
     select 1

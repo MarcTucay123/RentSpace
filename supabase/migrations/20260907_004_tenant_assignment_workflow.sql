@@ -1,9 +1,9 @@
 -- Current product scope is one dormitory managed by approved landlords.
 -- Let approved landlords see tenant identity rows needed for assignment.
-drop policy if exists "profiles_select_approved_tenants_for_landlords" on public.profiles;
+drop policy if exists "users_select_approved_tenants_for_landlords" on public.users;
 
-create policy "profiles_select_approved_tenants_for_landlords"
-on public.profiles
+create policy "users_select_approved_tenants_for_landlords"
+on public.users
 for select
 to authenticated
 using (
@@ -48,7 +48,7 @@ begin
   select p.role, p.account_status
   into tenant_role, tenant_status
   from public.tenant_profiles as tp
-  join public.profiles as p on p.id = tp.profile_id
+  join public.users as p on p.id = tp.profile_id
   where tp.id = new.tenant_profile_id;
 
   if tenant_role is distinct from 'tenant' then
@@ -113,7 +113,7 @@ with check (
   (select public.is_landlord())
   and exists (
     select 1
-    from public.profiles as p
+    from public.users as p
     where p.id = recipient_profile_id
       and p.role = 'tenant'
       and p.account_status = 'approved'

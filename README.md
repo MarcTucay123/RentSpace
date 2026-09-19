@@ -38,10 +38,10 @@ Copy `.env.example` to `.env.local` and provide values from your Supabase projec
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
-SUPABASE_SERVICE_ROLE_KEY=your_server_only_secret_key
+SUPABASE_SECRET_KEY=your_server_only_secret_key
 ```
 
-`SUPABASE_SERVICE_ROLE_KEY` is used only by privileged server-side account-management and maintenance scripts. Never expose it in browser code, commit it to Git, or prefix it with `NEXT_PUBLIC_`.
+`SUPABASE_SECRET_KEY` is used only by privileged server-side account-management and maintenance scripts. The legacy `SUPABASE_SERVICE_ROLE_KEY` name is also supported. Never expose either key in browser code, commit it to Git, or prefix it with `NEXT_PUBLIC_`.
 
 ### 3. Prepare Supabase
 
@@ -82,7 +82,9 @@ Read and verify `scripts/reset-supabase-data.mjs` before using it. The script is
 
 ## Deployment
 
-The application can be deployed to a Next.js-compatible platform such as Vercel. Configure the same environment variables in the deployment platform and keep `SUPABASE_SERVICE_ROLE_KEY` server-only.
+The application can be deployed to a Next.js-compatible platform such as Vercel. The Vercel Supabase integration provides `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY`; verify that they are enabled for the intended Production and Preview environments, then redeploy. Keep `SUPABASE_SECRET_KEY` server-only.
+
+Database migrations are not applied by a Vercel application build. Apply pending migrations to the connected Supabase project before deploying application code that depends on them.
 
 ## License
 
