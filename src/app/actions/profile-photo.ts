@@ -11,7 +11,7 @@ type UploadState = {
 };
 
 const allowedTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-const maxFileSize = 2 * 1024 * 1024;
+const maxFileSize = 10 * 1024 * 1024;
 
 function normalizeImageFile(file: File) {
   const rawExtension = file.name.split(".").pop()?.toLowerCase();
@@ -47,16 +47,17 @@ export async function uploadProfilePhoto(formData: FormData): Promise<UploadStat
   }
 
   if (file.size > maxFileSize) {
-    return { success: false, message: "Profile photo must be 2MB or smaller." };
+    return { success: false, message: "Profile photo must be 10MB or smaller." };
   }
 
-  const storagePath = `${user.id}/avatar-${Date.now()}-${crypto.randomUUID()}.${normalizedFile.extension}`;
+  const storagePath = `${user.id}/avatar`;
+  const avatarVersion = Date.now();
 
   const { error: uploadError } = await supabase.storage
     .from("profile-photos")
     .upload(storagePath, file, {
       cacheControl: "31536000",
-      upsert: false,
+      upsert: true,
       contentType: normalizedFile.mimeType,
     });
 
@@ -67,7 +68,7 @@ export async function uploadProfilePhoto(formData: FormData): Promise<UploadStat
       : normalizedError.includes("mime") || normalizedError.includes("content type")
         ? "This image format was not accepted. Please choose a JPG, PNG, or WEBP image."
         : normalizedError.includes("maximum") || normalizedError.includes("too large") || normalizedError.includes("payload")
-          ? "The profile photo is too large. Please choose an image that is 2MB or smaller."
+          ? "The profile photo is too large. Please choose an image that is 10MB or smaller."
           : "Profile photo upload failed. Please try again.";
     return {
       success: false,
@@ -76,24 +77,35 @@ export async function uploadProfilePhoto(formData: FormData): Promise<UploadStat
   }
 
   const { data: publicUrlData } = supabase.storage.from("profile-photos").getPublicUrl(storagePath);
+  const versionedPhotoUrl = `${publicUrlData.publicUrl}?v=${avatarVersion}`;
 
   const { error: profileError } = await supabase
     .from("users")
-    .update({ profile_photo_url: publicUrlData.publicUrl })
+    .update({ profile_photo_url: versionedPhotoUrl })
     .eq("id", user.id);
 
   if (profileError) {
-    await supabase.storage.from("profile-photos").remove([storagePath]);
     return { success: false, message: "Your photo uploaded, but the profile record could not be updated." };
   }
 
-  const { data: avatarFiles } = await supabase.storage.from("profile-photos").list(user.id);
-  const oldAvatarPaths = (avatarFiles ?? [])
-    .filter((avatarFile) => avatarFile.name !== storagePath.split("/").pop())
-    .map((avatarFile) => `${user.id}/${avatarFile.name}`);
+  const { data: avatarFiles, error: listError } = await supabase.storage
+    .from("profile-photos")
+    .list(user.id, { limit: 1000 });
+  let cleanupMessage: string | undefined;
 
-  if (oldAvatarPaths.length > 0) {
-    await supabase.storage.from("profile-photos").remove(oldAvatarPaths);
+  if (listError) {
+    cleanupMessage = "Profile photo updated, but old photo cleanup could not be verified. Please try uploading again later.";
+  } else {
+    const oldAvatarPaths = (avatarFiles ?? [])
+      .filter((avatarFile) => avatarFile.name !== "avatar")
+      .map((avatarFile) => `${user.id}/${avatarFile.name}`);
+
+    if (oldAvatarPaths.length > 0) {
+      const { error: removeError } = await supabase.storage.from("profile-photos").remove(oldAvatarPaths);
+      if (removeError) {
+        cleanupMessage = "Profile photo updated, but a previous legacy file could not be deleted. Please try uploading again later.";
+      }
+    }
   }
 
   revalidatePath("/profile");
@@ -110,5 +122,9 @@ export async function uploadProfilePhoto(formData: FormData): Promise<UploadStat
   revalidatePath("/landlord", "layout");
   revalidatePath("/tenant", "layout");
 
-  return { success: true, message: "Profile photo uploaded successfully.", photoUrl: publicUrlData.publicUrl };
+  return {
+    success: true,
+    message: cleanupMessage ?? "Profile photo uploaded successfully.",
+    photoUrl: versionedPhotoUrl,
+  };
 }

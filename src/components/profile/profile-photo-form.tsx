@@ -36,7 +36,7 @@ export function ProfilePhotoForm({ profile, assignmentLabel }: ProfilePhotoFormP
         <div className="flex items-center gap-4">
           <ProfileAvatar photoUrl={uploadedPhotoUrl ?? profile.profile_photo_url} name={`${profile.first_name} ${profile.last_name}`} assignmentLabel={profile.role === "tenant" ? assignmentLabel ?? "No current assignment" : `${profile.role.charAt(0).toUpperCase()}${profile.role.slice(1)} account`} assignmentPrefix={profile.role === "tenant" ? "Assigned to" : "Account"} className="h-24 w-24 text-2xl" />
           <div className="text-sm text-[var(--color-dormmate-muted)]">
-            JPG, PNG, or WEBP. Max 2MB. Uploads are stored using your own user path.
+            JPG, PNG, or WEBP. Max 10MB. Replacing your photo deletes the previous file from storage.
           </div>
         </div>
 
