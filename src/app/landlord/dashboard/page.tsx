@@ -101,7 +101,7 @@ return (
 <section className="portal-hero overflow-hidden rounded-[1.5rem] text-white">
 <div className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
 <div>
-<p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#778da9]">Landlord overview</p>
+<p className="dashboard-kicker">Landlord overview</p>
 <h1 className="mt-2 text-[1.75rem] font-bold tracking-[-0.025em] sm:text-[2rem]">
 Good day, {getDisplayName(profile)}
 </h1>

@@ -63,7 +63,7 @@ export default async function TenantDashboardPage() {
       <section className="portal-hero overflow-hidden rounded-[1.5rem] text-white">
         <div className="grid gap-6 px-5 py-6 sm:px-7 sm:py-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#778da9]">Tenant dashboard</p>
+            <p className="dashboard-kicker">Tenant dashboard</p>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-[2rem]">Welcome, {tenantName}</h1>
             <p className="mt-2 text-sm text-[#e0e1dd]">Your rent and rental details in one place.</p>
           </div>

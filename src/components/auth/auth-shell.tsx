@@ -38,16 +38,16 @@ export function AuthShell({ eyebrow, title, description, footer, children, compa
     <div className="auth-page min-h-screen px-3 py-3 text-[var(--color-dormmate-text)] sm:px-5 sm:py-5">
       <div className={`auth-frame mx-auto overflow-hidden ${formOnly && narrowForm ? "max-w-[1120px]" : "max-w-[1280px]"}`}>
         <div className={`grid min-h-[calc(100vh-1.5rem)] ${formOnly ? "lg:grid-cols-[minmax(360px,0.9fr)_minmax(460px,1.1fr)]" : "lg:grid-cols-[minmax(0,1fr)_minmax(440px,0.8fr)]"}`}>
-          <section className="auth-intro relative flex min-h-[330px] flex-col overflow-hidden p-6 sm:p-9 lg:min-h-full lg:p-12">
+          <section className="auth-intro relative flex min-h-[250px] flex-col overflow-hidden p-6 sm:min-h-[300px] sm:p-9 lg:min-h-full lg:p-12">
             <Link href="/" className="relative z-10 inline-flex w-fit items-center gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#315a57] text-sm font-black text-[#f4cf58] shadow-lg">R</span>
               <span><span className="block text-xl font-black leading-none tracking-[-0.04em] text-[#294d4b]">Rent<span className="text-[#b78a12]">Space</span></span><span className="mt-1 block text-[9px] font-bold uppercase leading-4 tracking-[0.1em] text-[#67807c]">Lady D&apos;s Dormitory and Apartment</span></span>
             </Link>
 
-            <div className="relative z-10 mt-10 max-w-[560px] lg:mt-16">
+            <div className="relative z-10 mt-7 max-w-[560px] sm:mt-10 lg:mt-16">
               <p className="section-kicker">{eyebrow}</p>
-              <h1 className="mt-4 text-3xl font-semibold leading-[1.05] tracking-[-0.045em] text-[#253d3b] sm:text-4xl lg:text-5xl">{title}</h1>
-              <p className="mt-5 max-w-lg text-sm leading-7 text-[#587572] sm:text-base">{description}</p>
+              <h1 className="mt-3 text-3xl font-semibold leading-[1.05] tracking-[-0.045em] text-[#253d3b] sm:mt-4 sm:text-4xl lg:text-5xl">{title}</h1>
+              <p className="mt-3 max-w-lg text-sm leading-6 text-[#587572] sm:mt-5 sm:text-base sm:leading-7">{description}</p>
             </div>
 
             <div className="relative z-10 mt-[2cm] hidden lg:block"><AuthArtwork /></div>

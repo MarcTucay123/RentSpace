@@ -19,7 +19,7 @@ export function PaymentProofForm({ rentalObligationId }: { rentalObligationId: s
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
         <label className="block flex-1 space-y-1.5">
           <span className="text-sm font-semibold text-[#1b263b]">Receipt image</span>
-          <input name="paymentProof" type="file" required accept="image/png,image/jpeg,image/webp" className="block w-full rounded-[14px] border border-[var(--color-dormmate-border)] bg-[var(--color-dormmate-surface)] px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--color-dormmate-green-soft)] file:px-3 file:py-1.5 file:font-semibold file:text-[#1b263b]" />
+          <input name="paymentProof" type="file" required accept="image/png,image/jpeg,image/jpg,image/webp,.jpg,.jpeg,.png,.webp" className="block w-full rounded-[14px] border border-[var(--color-dormmate-border)] bg-[var(--color-dormmate-surface)] px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--color-dormmate-green-soft)] file:px-3 file:py-1.5 file:font-semibold file:text-[#1b263b]" />
           <span className="block text-xs text-[var(--color-dormmate-muted)]">PNG, JPG, or WEBP • maximum 5MB</span>
         </label>
         <button type="submit" disabled={pending} className="rounded-[14px] bg-[#1b263b] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">{pending ? "Uploading..." : "Submit Proof"}</button>

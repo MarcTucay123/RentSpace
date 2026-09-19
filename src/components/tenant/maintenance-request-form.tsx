@@ -66,7 +66,7 @@ export function MaintenanceRequestForm() {
 
       <label className="block space-y-1.5">
         <span className="block text-sm font-semibold text-[#1b263b]">Attach photos</span>
-        <input name="maintenancePhotos" type="file" multiple accept="image/png,image/jpeg,image/webp" className="block w-full rounded-[14px] border border-[#e0e1dd] bg-[var(--color-dormmate-green-soft)] px-3 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-1.5 file:font-semibold file:text-[#1b263b]" />
+        <input name="maintenancePhotos" type="file" multiple accept="image/png,image/jpeg,image/jpg,image/webp,.jpg,.jpeg,.png,.webp" className="block w-full rounded-[14px] border border-[#e0e1dd] bg-[var(--color-dormmate-green-soft)] px-3 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-1.5 file:font-semibold file:text-[#1b263b]" />
         <span className="block text-xs text-[var(--color-dormmate-muted)]">Optional • PNG, JPG, or WEBP • up to 3 photos • maximum 5MB each</span>
       </label>
 

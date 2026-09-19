@@ -9,6 +9,7 @@ type ConfirmationModalProps = {
   confirmLabel: string;
   tone?: "positive" | "danger";
   pending?: boolean;
+  hideCancel?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 };
@@ -20,20 +21,23 @@ export function ConfirmationModal({
   confirmLabel,
   tone = "positive",
   pending = false,
+  hideCancel = false,
   onCancel,
   onConfirm,
 }: ConfirmationModalProps) {
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    cancelButtonRef.current?.focus();
+    if (hideCancel) confirmButtonRef.current?.focus();
+    else cancelButtonRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !pending) onCancel();
+      if (event.key === "Escape" && !pending && !hideCancel) onCancel();
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -41,7 +45,7 @@ export function ConfirmationModal({
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onCancel, open, pending]);
+  }, [hideCancel, onCancel, open, pending]);
 
   if (!open) return null;
 
@@ -52,7 +56,7 @@ export function ConfirmationModal({
       <button
         type="button"
         aria-label="Close confirmation dialog"
-        disabled={pending}
+        disabled={pending || hideCancel}
         onClick={onCancel}
         className="absolute inset-0 bg-[#0d1b2a]/50 backdrop-blur-[2px] disabled:cursor-wait"
       />
@@ -77,17 +81,20 @@ export function ConfirmationModal({
             {description}
           </p>
 
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className={`mt-6 grid gap-3 ${hideCancel ? "grid-cols-1" : "grid-cols-2"}`}>
+            {!hideCancel ? (
+              <button
+                ref={cancelButtonRef}
+                type="button"
+                disabled={pending}
+                onClick={onCancel}
+                className="rounded-[14px] border border-[var(--color-dormmate-border)] bg-white px-4 py-2.5 text-sm font-semibold text-[#415a77] transition hover:bg-[var(--color-dormmate-surface)] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Cancel
+              </button>
+            ) : null}
             <button
-              ref={cancelButtonRef}
-              type="button"
-              disabled={pending}
-              onClick={onCancel}
-              className="rounded-[14px] border border-[var(--color-dormmate-border)] bg-white px-4 py-2.5 text-sm font-semibold text-[#415a77] transition hover:bg-[var(--color-dormmate-surface)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Cancel
-            </button>
-            <button
+              ref={confirmButtonRef}
               type="button"
               disabled={pending}
               onClick={onConfirm}

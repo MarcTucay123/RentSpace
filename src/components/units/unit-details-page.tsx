@@ -202,7 +202,7 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
                                 </div>
                               </div>
                               <div className="flex shrink-0 flex-col items-end gap-2">
-                                <span className="rounded-full border border-[var(--color-dormmate-border)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-dormmate-muted)]">
+                                <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${unit.occupied_bed_space_ids.includes(bedSpace.id) ? "bg-[#fff2df] text-[#b87417]" : bedSpace.status === "available" ? "bg-[var(--color-dormmate-primary)] text-white" : "bg-[#f5f6f4] text-[#415a77]"}`}>
                                   {unit.occupied_bed_space_ids.includes(bedSpace.id) ? "occupied" : bedSpace.status}
                                 </span>
                                 <button type="button" aria-expanded={editingBedSpaceId === bedSpace.id} onClick={() => setEditingBedSpaceId((current) => current === bedSpace.id ? null : bedSpace.id)} className="text-sm font-semibold text-[var(--color-dormmate-primary)] hover:underline">{editingBedSpaceId === bedSpace.id ? "Cancel" : "Edit"}</button>
@@ -254,7 +254,7 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
                         </div>
                       </div>
                       <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${occupancyStatus === "Occupied" ? "bg-[#fff2df] text-[#b87417]" : occupancyStatus === "Available" ? "bg-[#f0f1ee] text-[#1b263b]" : "bg-[#f5f6f4] text-[#415a77]"}`}>
+                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${occupancyStatus === "Occupied" ? "bg-[#fff2df] text-[#b87417]" : occupancyStatus === "Available" ? "bg-[var(--color-dormmate-primary)] text-white" : "bg-[#f5f6f4] text-[#415a77]"}`}>
                           {occupancyStatus}
                         </span>
                         <button

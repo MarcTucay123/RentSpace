@@ -387,6 +387,25 @@ a {
   z-index: 1;
 }
 
+.dashboard-kicker {
+  display: inline-flex;
+  border-radius: 0.65rem;
+  color: #e3bd42;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  line-height: 1rem;
+  padding: 0.35rem 0.45rem;
+  text-transform: uppercase;
+  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.dashboard-kicker:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f4cf58;
+  transform: translateY(-1px);
+}
+
 .eyebrow-pill {
   display: inline-flex;
   align-items: center;

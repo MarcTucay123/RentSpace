@@ -52,7 +52,7 @@ export function ProfilePhotoForm({ profile, assignmentLabel }: ProfilePhotoFormP
           <input
             type="file"
             name="profilePhoto"
-            accept="image/png,image/jpeg,image/webp"
+            accept="image/png,image/jpeg,image/jpg,image/webp,.jpg,.jpeg,.png,.webp"
             className="block w-full rounded-2xl border border-[var(--color-dormmate-border)] bg-[var(--color-dormmate-surface)] px-4 py-3 text-sm"
           />
 

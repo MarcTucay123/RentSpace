@@ -14,6 +14,31 @@ const allowedProofTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 const maxProofSize = 5 * 1024 * 1024;
 const maxMaintenancePhotos = 3;
 
+function normalizeImageFile(file: File) {
+  const rawExtension = file.name.split(".").pop()?.toLowerCase();
+  const rawMimeType = file.type.toLowerCase();
+  const mimeType = rawMimeType === "image/jpg" || rawMimeType === "image/pjpeg"
+    ? "image/jpeg"
+    : rawMimeType || (rawExtension === "png" ? "image/png" : rawExtension === "webp" ? "image/webp" : rawExtension === "jpg" || rawExtension === "jpeg" ? "image/jpeg" : "");
+  const extension = mimeType === "image/jpeg" ? "jpg" : mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : rawExtension;
+
+  return { extension: extension || "jpg", mimeType };
+}
+
+function getUploadErrorMessage(kind: "proof" | "maintenance", message: string) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("bucket") && normalized.includes("not found")) {
+    return `${kind === "proof" ? "Payment proof" : "Maintenance photo"} storage is not configured yet. Apply the required Supabase storage migration.`;
+  }
+  if (normalized.includes("mime") || normalized.includes("content type")) {
+    return "This image format was not accepted. Please choose a JPG, PNG, or WEBP image.";
+  }
+  if (normalized.includes("maximum") || normalized.includes("too large") || normalized.includes("payload")) {
+    return "The image is too large. Please choose an image that is 5MB or smaller.";
+  }
+  return `${kind === "proof" ? "Payment proof" : "Maintenance photo"} upload failed. Please try again.`;
+}
+
 export async function submitPaymentProof(
   _previousState: TenantActionState,
   formData: FormData,
@@ -24,7 +49,8 @@ export async function submitPaymentProof(
   const file = formData.get("paymentProof");
 
   if (!obligationId || !(file instanceof File) || file.size === 0) return { success: false, message: "Choose a payment proof image." };
-  if (!allowedProofTypes.has(file.type)) return { success: false, message: "Only PNG, JPG, and WEBP proof images are allowed." };
+  const normalizedFile = normalizeImageFile(file);
+  if (!allowedProofTypes.has(normalizedFile.mimeType)) return { success: false, message: "Only PNG, JPG, and WEBP proof images are allowed." };
   if (file.size > maxProofSize) return { success: false, message: "Payment proof must be 5MB or smaller." };
 
   const { data: tenantProfile } = await supabase.from("tenant_profiles").select("id").eq("profile_id", profile.id).maybeSingle();
@@ -45,10 +71,9 @@ export async function submitPaymentProof(
   const amount = Math.max(Number(obligation.amount_due) - Number(obligation.amount_paid), 0);
   if (amount <= 0) return { success: false, message: "There is no outstanding balance for this obligation." };
 
-  const extension = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-  const storagePath = `${profile.id}/${obligation.id}/${crypto.randomUUID()}.${extension}`;
-  const { error: uploadError } = await supabase.storage.from("payment-proofs").upload(storagePath, file, { contentType: file.type, upsert: false });
-  if (uploadError) return { success: false, message: "Proof upload failed. Run migration 20260915_003 in Supabase and try again." };
+  const storagePath = `${profile.id}/${obligation.id}/${crypto.randomUUID()}.${normalizedFile.extension}`;
+  const { error: uploadError } = await supabase.storage.from("payment-proofs").upload(storagePath, file, { contentType: normalizedFile.mimeType, upsert: false });
+  if (uploadError) return { success: false, message: getUploadErrorMessage("proof", uploadError.message) };
 
   const { error: submitError } = await supabase.rpc("submit_tenant_payment_proof", {
     p_rental_obligation_id: obligation.id,
@@ -56,7 +81,7 @@ export async function submitPaymentProof(
     p_payment_date: new Date().toISOString().slice(0, 10),
     p_storage_path: storagePath,
     p_original_file_name: file.name,
-    p_mime_type: file.type,
+    p_mime_type: normalizedFile.mimeType,
   });
   if (submitError) {
     await supabase.storage.from("payment-proofs").remove([storagePath]);
@@ -88,7 +113,7 @@ export async function submitMaintenanceRequest(
   }
   if (photos.length > maxMaintenancePhotos) return { success: false, message: "Upload no more than 3 maintenance photos." };
   for (const photo of photos) {
-    if (!allowedProofTypes.has(photo.type)) return { success: false, message: "Maintenance photos must be PNG, JPG, or WEBP images." };
+    if (!allowedProofTypes.has(normalizeImageFile(photo).mimeType)) return { success: false, message: "Maintenance photos must be PNG, JPG, or WEBP images." };
     if (photo.size > maxProofSize) return { success: false, message: "Each maintenance photo must be 5MB or smaller." };
   }
 
@@ -121,16 +146,16 @@ export async function submitMaintenanceRequest(
   const mimeTypes: string[] = [];
 
   for (const photo of photos) {
-    const extension = photo.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const storagePath = `${profile.id}/${requestFolderId}/${crypto.randomUUID()}.${extension}`;
-    const { error: uploadError } = await supabase.storage.from("maintenance-photos").upload(storagePath, photo, { contentType: photo.type, upsert: false });
+    const normalizedPhoto = normalizeImageFile(photo);
+    const storagePath = `${profile.id}/${requestFolderId}/${crypto.randomUUID()}.${normalizedPhoto.extension}`;
+    const { error: uploadError } = await supabase.storage.from("maintenance-photos").upload(storagePath, photo, { contentType: normalizedPhoto.mimeType, upsert: false });
     if (uploadError) {
       if (uploadedPaths.length) await supabase.storage.from("maintenance-photos").remove(uploadedPaths);
-      return { success: false, message: "Maintenance photo upload failed. Apply migration 20260916_007 in Supabase, then try again." };
+      return { success: false, message: getUploadErrorMessage("maintenance", uploadError.message) };
     }
     uploadedPaths.push(storagePath);
     originalFileNames.push(photo.name);
-    mimeTypes.push(photo.type);
+    mimeTypes.push(normalizedPhoto.mimeType);
   }
 
   const { error } = await supabase.rpc("submit_tenant_maintenance_request", {
