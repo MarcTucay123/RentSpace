@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { uploadProfilePhoto } from "@/app/actions/profile-photo";
@@ -13,8 +14,10 @@ type ProfilePhotoFormProps = {
 };
 
 export function ProfilePhotoForm({ profile, assignmentLabel }: ProfilePhotoFormProps) {
+  const router = useRouter();
   const [message, setMessage] = useState<string>();
   const [success, setSuccess] = useState(false);
+  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string>();
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -31,7 +34,7 @@ export function ProfilePhotoForm({ profile, assignmentLabel }: ProfilePhotoFormP
 
       <div className="mt-6 flex flex-col gap-5">
         <div className="flex items-center gap-4">
-          <ProfileAvatar photoUrl={profile.profile_photo_url} name={`${profile.first_name} ${profile.last_name}`} assignmentLabel={profile.role === "tenant" ? assignmentLabel ?? "No current assignment" : `${profile.role.charAt(0).toUpperCase()}${profile.role.slice(1)} account`} assignmentPrefix={profile.role === "tenant" ? "Assigned to" : "Account"} className="h-24 w-24 text-2xl" />
+          <ProfileAvatar photoUrl={uploadedPhotoUrl ?? profile.profile_photo_url} name={`${profile.first_name} ${profile.last_name}`} assignmentLabel={profile.role === "tenant" ? assignmentLabel ?? "No current assignment" : `${profile.role.charAt(0).toUpperCase()}${profile.role.slice(1)} account`} assignmentPrefix={profile.role === "tenant" ? "Assigned to" : "Account"} className="h-24 w-24 text-2xl" />
           <div className="text-sm text-[var(--color-dormmate-muted)]">
             JPG, PNG, or WEBP. Max 2MB. Uploads are stored using your own user path.
           </div>
@@ -45,6 +48,10 @@ export function ProfilePhotoForm({ profile, assignmentLabel }: ProfilePhotoFormP
               const result = await uploadProfilePhoto(formData);
               setMessage(result.message);
               setSuccess(Boolean(result.success));
+              if (result.success && result.photoUrl) {
+                setUploadedPhotoUrl(result.photoUrl);
+                router.refresh();
+              }
             });
           }}
           className="space-y-4"

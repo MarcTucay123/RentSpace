@@ -171,9 +171,7 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
                           </div>
                         </div>
                         <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
-                          <button type="button" aria-expanded={editingRoomId === room.id} onClick={() => setEditingRoomId((current) => current === room.id ? null : room.id)} className="rounded-[10px] border border-[var(--color-dormmate-primary)] bg-white px-3 py-2 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]">
-                            {editingRoomId === room.id ? "Cancel" : "Edit"}
-                          </button>
+                          {editingRoomId !== room.id ? <button type="button" aria-expanded="false" onClick={() => setEditingRoomId(room.id)} className="rounded-[10px] border border-[var(--color-dormmate-primary)] bg-white px-3 py-2 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]">Edit</button> : null}
                           <button type="button" onClick={() => setAddingBedToRoomId(room.id)} className="rounded-[10px] bg-[var(--color-dormmate-primary)] px-3 py-2 text-sm font-semibold text-white hover:opacity-90">Add Bed</button>
                           <button type="button" disabled={removing} onClick={() => { const opening = bedRemovalRoomId !== room.id; setBedRemovalRoomId(opening ? room.id : null); setSelectedBedIds([]); setRoomRemovalMode(false); setSelectedRoomIds([]); }} className="rounded-[10px] border border-[#d98d79] bg-white px-3 py-2 text-sm font-semibold text-[#b9573b] hover:bg-[#fff7f4] disabled:opacity-50">{bedRemovalRoomId === room.id ? "Cancel Bed Removal" : "Remove Bed"}</button>
                         </div>
@@ -205,7 +203,7 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
                                 <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${unit.occupied_bed_space_ids.includes(bedSpace.id) ? "bg-[#fff2df] text-[#b87417]" : bedSpace.status === "available" ? "bg-[var(--color-dormmate-primary)] text-white" : "bg-[#f5f6f4] text-[#415a77]"}`}>
                                   {unit.occupied_bed_space_ids.includes(bedSpace.id) ? "occupied" : bedSpace.status}
                                 </span>
-                                <button type="button" aria-expanded={editingBedSpaceId === bedSpace.id} onClick={() => setEditingBedSpaceId((current) => current === bedSpace.id ? null : bedSpace.id)} className="rounded-[10px] border border-[var(--color-dormmate-primary)] bg-white px-3 py-2 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]">{editingBedSpaceId === bedSpace.id ? "Cancel" : "Edit"}</button>
+                                {editingBedSpaceId !== bedSpace.id ? <button type="button" aria-expanded="false" onClick={() => setEditingBedSpaceId(bedSpace.id)} className="rounded-[10px] border border-[var(--color-dormmate-primary)] bg-white px-3 py-2 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]">Edit</button> : null}
                               </div>
                             </div>
                             {editingBedSpaceId === bedSpace.id ? (
@@ -257,14 +255,16 @@ export function UnitDetailsPage({ unit }: UnitDetailsPageProps) {
                         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${occupancyStatus === "Occupied" ? "bg-[#fff2df] text-[#b87417]" : occupancyStatus === "Available" ? "bg-[var(--color-dormmate-primary)] text-white" : "bg-[#f5f6f4] text-[#415a77]"}`}>
                           {occupancyStatus}
                         </span>
-                        <button
-                          type="button"
-                          aria-expanded={editingRoomId === room.id}
-                          onClick={() => setEditingRoomId((current) => current === room.id ? null : room.id)}
-                          className="rounded-[10px] border border-[var(--color-dormmate-primary)] bg-white px-3 py-2 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]"
-                        >
-                          {editingRoomId === room.id ? "Cancel" : "Edit"}
-                        </button>
+                        {editingRoomId !== room.id ? (
+                          <button
+                            type="button"
+                            aria-expanded="false"
+                            onClick={() => setEditingRoomId(room.id)}
+                            className="rounded-[10px] border border-[var(--color-dormmate-primary)] bg-white px-3 py-2 text-sm font-semibold text-[var(--color-dormmate-primary)] transition hover:bg-[var(--color-dormmate-surface)]"
+                          >
+                            Edit
+                          </button>
+                        ) : null}
                       </div>
                     </div>
                     {editingRoomId === room.id ? (

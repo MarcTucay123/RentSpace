@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 
 export const metadata: Metadata = {
@@ -86,7 +87,7 @@ export default function Home() {
     <div className="landing-page min-h-screen text-[var(--color-dormmate-text)]">
       <header className="landing-header sticky top-0 z-30">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8">
-          <Link href="/" aria-label="RentSpace home" className="shrink-0"><div className="text-2xl font-black leading-none tracking-[-0.05em] text-[#294d4b]">Rent<span className="text-[#d6a91f]">Space</span></div><div className="mt-1 text-[10px] font-bold uppercase leading-4 tracking-[0.1em] text-[#587572]">Lady D&apos;s Dormitory and Apartment</div></Link>
+          <Link href="/" aria-label="RentSpace home" className="shrink-0"><BrandLogo className="h-auto w-[170px] sm:w-[220px]" priority /></Link>
           <nav aria-label="Main navigation" className="hidden items-center gap-8 text-sm font-semibold text-[#587572] lg:flex"><a href="#overview" className="transition hover:text-[#294d4b]">Overview</a><a href="#capabilities" className="transition hover:text-[#294d4b]">Capabilities</a><a href="#workflow" className="transition hover:text-[#294d4b]">How it works</a></nav>
           <Link href="/login" className="brand-button rounded-xl px-4 py-2.5 text-sm font-semibold text-white sm:px-5">Sign In</Link>
         </div>

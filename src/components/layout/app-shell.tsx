@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
 import type { Profile } from "@/lib/auth/types";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { PortalAutoRefresh } from "@/components/layout/portal-auto-refresh";
 
@@ -147,15 +148,8 @@ export function AppShell({ profile, profileAssignmentLabel, title, subtitle, nav
     <div className="portal-page min-h-screen px-3 py-3 text-[var(--color-dormmate-text)] sm:px-4 lg:px-[1cm]">
       <PortalAutoRefresh profileId={profile.id} />
       <header className="portal-topbar mb-4 flex min-h-[68px] items-center gap-3 rounded-[20px] px-3 py-3 sm:min-h-[74px] sm:px-4">
-        <div className="shrink-0" aria-label="RentSpace product identity">
-          <div className="rounded-[12px] border border-[#d8e5e2] bg-gradient-to-br from-white to-[#eef5f3] px-2.5 py-2 shadow-sm sm:px-3">
-            <div className="text-[14px] font-black leading-none text-[var(--color-dormmate-text-strong)]">
-              Rent<span className="text-[#315a57]">Space</span>
-            </div>
-            <div className="mt-1.5 hidden max-w-[190px] text-[8px] font-bold uppercase leading-3 tracking-[0.08em] text-[#50726f] sm:block">
-              Lady D&apos;s Dormitory and Apartment
-            </div>
-          </div>
+        <div className="shrink-0 rounded-[12px] border border-[#d8e5e2] bg-gradient-to-br from-white to-[#eef5f3] px-2 py-1.5 shadow-sm" aria-label="RentSpace product identity">
+          <BrandLogo className="h-auto w-[112px] sm:w-[150px]" priority />
         </div>
 
         <div className="min-w-0 flex-1">

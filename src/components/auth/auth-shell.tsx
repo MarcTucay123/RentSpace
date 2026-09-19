@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { BrandLogo } from "@/components/brand/brand-logo";
+
 type AuthShellProps = {
   eyebrow: string;
   title: string;
@@ -39,9 +41,8 @@ export function AuthShell({ eyebrow, title, description, footer, children, compa
       <div className={`auth-frame mx-auto overflow-hidden ${formOnly && narrowForm ? "max-w-[1120px]" : "max-w-[1280px]"}`}>
         <div className={`grid min-h-[calc(100vh-1.5rem)] ${formOnly ? "lg:grid-cols-[minmax(360px,0.9fr)_minmax(460px,1.1fr)]" : "lg:grid-cols-[minmax(0,1fr)_minmax(440px,0.8fr)]"}`}>
           <section className="auth-intro relative flex min-h-[250px] flex-col overflow-hidden p-6 sm:min-h-[300px] sm:p-9 lg:min-h-full lg:p-12">
-            <Link href="/" className="relative z-10 inline-flex w-fit items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#315a57] text-sm font-black text-[#f4cf58] shadow-lg">R</span>
-              <span><span className="block text-xl font-black leading-none tracking-[-0.04em] text-[#294d4b]">Rent<span className="text-[#b78a12]">Space</span></span><span className="mt-1 block text-[9px] font-bold uppercase leading-4 tracking-[0.1em] text-[#67807c]">Lady D&apos;s Dormitory and Apartment</span></span>
+            <Link href="/" aria-label="RentSpace home" className="relative z-10 inline-flex w-fit rounded-2xl bg-white/55 px-3 py-2 shadow-sm backdrop-blur-sm">
+              <BrandLogo className="h-auto w-[190px] sm:w-[230px]" priority />
             </Link>
 
             <div className="relative z-10 mt-7 max-w-[560px] sm:mt-10 lg:mt-16">

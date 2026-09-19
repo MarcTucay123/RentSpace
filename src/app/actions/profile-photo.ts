@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/server";
 type UploadState = {
   success?: boolean;
   message?: string;
+  photoUrl?: string;
 };
 
 const allowedTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
@@ -49,13 +50,13 @@ export async function uploadProfilePhoto(formData: FormData): Promise<UploadStat
     return { success: false, message: "Profile photo must be 2MB or smaller." };
   }
 
-  const storagePath = `${user.id}/avatar.${normalizedFile.extension}`;
+  const storagePath = `${user.id}/avatar-${Date.now()}-${crypto.randomUUID()}.${normalizedFile.extension}`;
 
   const { error: uploadError } = await supabase.storage
     .from("profile-photos")
     .upload(storagePath, file, {
-      cacheControl: "3600",
-      upsert: true,
+      cacheControl: "31536000",
+      upsert: false,
       contentType: normalizedFile.mimeType,
     });
 
@@ -82,7 +83,17 @@ export async function uploadProfilePhoto(formData: FormData): Promise<UploadStat
     .eq("id", user.id);
 
   if (profileError) {
+    await supabase.storage.from("profile-photos").remove([storagePath]);
     return { success: false, message: "Your photo uploaded, but the profile record could not be updated." };
+  }
+
+  const { data: avatarFiles } = await supabase.storage.from("profile-photos").list(user.id);
+  const oldAvatarPaths = (avatarFiles ?? [])
+    .filter((avatarFile) => avatarFile.name !== storagePath.split("/").pop())
+    .map((avatarFile) => `${user.id}/${avatarFile.name}`);
+
+  if (oldAvatarPaths.length > 0) {
+    await supabase.storage.from("profile-photos").remove(oldAvatarPaths);
   }
 
   revalidatePath("/profile");
@@ -99,5 +110,5 @@ export async function uploadProfilePhoto(formData: FormData): Promise<UploadStat
   revalidatePath("/landlord", "layout");
   revalidatePath("/tenant", "layout");
 
-  return { success: true, message: "Profile photo uploaded successfully." };
+  return { success: true, message: "Profile photo uploaded successfully.", photoUrl: publicUrlData.publicUrl };
 }
