@@ -295,8 +295,23 @@ export async function login(
 
 export async function logout() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let loginPath = "/login";
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profile?.role === "admin") loginPath = "/login/admin";
+  }
+
   await supabase.auth.signOut();
-  redirect("/login");
+  redirect(loginPath);
 }
 
 export async function approveLandlord(profileId: string) {
