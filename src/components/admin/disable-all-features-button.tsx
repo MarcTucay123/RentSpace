@@ -28,7 +28,7 @@ export function DisableAllFeaturesButton() {
       <ConfirmationModal
         open={open}
         title="Turn off all user features?"
-        description="This immediately disables every Dashboard and module feature for every Landlord and Tenant account. Profile Settings will remain available so users are not locked out of their account settings."
+        description="This immediately hides all Dashboard content and disables every module for all Landlord and Tenant accounts. The Dashboard and Profile Settings buttons will remain available so users can still navigate and manage their account settings."
         confirmLabel="Turn Off All"
         tone="danger"
         pending={busy}

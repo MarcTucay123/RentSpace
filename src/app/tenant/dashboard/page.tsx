@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { requireTenantAccess } from "@/lib/auth/utils";
+import { getEnabledFeatureKeys } from "@/lib/features/access";
 import { getTenantNotifications, getTenantRentalSnapshot } from "@/lib/tenant/data";
 
 export const metadata = { title: "Tenant Dashboard | RentSpace" };
@@ -45,6 +46,10 @@ function getPaymentGuidance(status: string | null | undefined, hasObligation: bo
 
 export default async function TenantDashboardPage() {
   const { profile } = await requireTenantAccess();
+  const enabledFeatures = await getEnabledFeatureKeys(profile);
+  if (!enabledFeatures.has("dashboard")) {
+    return <p className="sr-only">Dashboard content has been disabled by an administrator.</p>;
+  }
   const [rentalSnapshot, notifications] = await Promise.all([
     getTenantRentalSnapshot(profile.id),
     getTenantNotifications(profile.id),

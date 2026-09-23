@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MonthlyCollectionsCard, OccupancyCard } from "@/components/landlord/occupancy-analytics";
 import { getDisplayName, requireLandlordAccess } from "@/lib/auth/utils";
+import { getEnabledFeatureKeys } from "@/lib/features/access";
 import {
 getLandlordMaintenanceRequests,
 getLandlordNotifications,
@@ -30,6 +31,10 @@ return status.replaceAll("_", " ");
 }
 export default async function LandlordDashboardPage() {
 const { profile } = await requireLandlordAccess();
+ const enabledFeatures = await getEnabledFeatureKeys(profile);
+ if (!enabledFeatures.has("dashboard")) {
+ return <p className="sr-only">Dashboard content has been disabled by an administrator.</p>;
+ }
 const [tenants, payments, maintenance, obligations, notifications, units, pendingRegistrations] = await Promise.all([
 getLandlordTenants(),
 getLandlordPayments(),

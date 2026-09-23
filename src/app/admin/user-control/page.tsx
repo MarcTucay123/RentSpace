@@ -53,7 +53,7 @@ export default async function UserControlPage({ searchParams }: UserControlPageP
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-dormmate-primary)]">Administration</p>
             <h1 className="mt-2 text-[1.55rem] font-semibold tracking-tight sm:text-[1.8rem]">User Control</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--color-dormmate-muted)]">
-              Turn individual Landlord and Tenant modules, including Dashboard, on or off. Disabled modules disappear from that user&apos;s side panel and direct page access is blocked. Profile Settings always remains available.
+              Turn individual Landlord and Tenant features on or off. When Dashboard is disabled, its navigation button remains visible while its content is hidden. Other disabled modules disappear from the side panel and direct access is blocked. Profile Settings always remains available.
             </p>
           </div>
           <DisableAllFeaturesButton />

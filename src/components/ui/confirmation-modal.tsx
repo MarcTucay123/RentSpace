@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 type ConfirmationModalProps = {
   open: boolean;
@@ -47,64 +48,67 @@ export function ConfirmationModal({
     };
   }, [hideCancel, onCancel, open, pending]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
   const isDanger = tone === "danger";
 
-  return (
-    <div className="fixed inset-0 z-[100] grid place-items-center px-4 py-6" role="presentation">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain" role="presentation">
       <button
         type="button"
         aria-label="Close confirmation dialog"
         disabled={pending || hideCancel}
         onClick={onCancel}
-        className="absolute inset-0 bg-[#0d1b2a]/50 backdrop-blur-[2px] disabled:cursor-wait"
+        className="fixed inset-0 bg-[#0d1b2a]/50 backdrop-blur-[2px] disabled:cursor-wait"
       />
 
-      <section
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="confirmation-modal-title"
-        aria-describedby="confirmation-modal-description"
-        className="relative w-full max-w-[420px] overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-[0_24px_70px_rgba(13,27,42,0.24)]"
-      >
-        <div className={`h-1.5 w-full ${isDanger ? "bg-[#cf6a4b]" : "bg-[var(--color-dormmate-primary)]"}`} />
-        <div className="p-5 sm:p-6">
-          <div className={`grid h-12 w-12 place-items-center rounded-full text-xl font-bold ${isDanger ? "bg-[#fbe9e5] text-[#b9573b]" : "bg-[var(--color-dormmate-green-soft)] text-[#1b263b]"}`} aria-hidden="true">
-            {isDanger ? "!" : "✓"}
-          </div>
+      <div className="relative z-10 flex min-h-full items-center justify-center p-4 sm:p-6">
+        <section
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="confirmation-modal-title"
+          aria-describedby="confirmation-modal-description"
+          className="w-full max-w-[440px] overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-[0_24px_70px_rgba(13,27,42,0.24)]"
+        >
+          <div className={`h-1.5 w-full ${isDanger ? "bg-[#cf6a4b]" : "bg-[var(--color-dormmate-primary)]"}`} />
+          <div className="p-5 sm:p-6">
+            <div className={`grid h-12 w-12 place-items-center rounded-full text-xl font-bold ${isDanger ? "bg-[#fbe9e5] text-[#b9573b]" : "bg-[var(--color-dormmate-green-soft)] text-[#1b263b]"}`} aria-hidden="true">
+              {isDanger ? "!" : "✓"}
+            </div>
 
-          <h2 id="confirmation-modal-title" className="mt-4 text-xl font-bold tracking-tight text-[var(--color-dormmate-text-strong)] sm:text-[1.4rem]">
-            {title}
-          </h2>
-          <p id="confirmation-modal-description" className="mt-2 text-sm leading-6 text-[var(--color-dormmate-muted)]">
-            {description}
-          </p>
+            <h2 id="confirmation-modal-title" className="mt-4 text-xl font-bold tracking-tight text-[var(--color-dormmate-text-strong)] sm:text-[1.4rem]">
+              {title}
+            </h2>
+            <p id="confirmation-modal-description" className="mt-2 text-sm leading-6 text-[var(--color-dormmate-muted)]">
+              {description}
+            </p>
 
-          <div className={`mt-6 grid gap-3 ${hideCancel ? "grid-cols-1" : "grid-cols-2"}`}>
-            {!hideCancel ? (
+            <div className={`mt-6 grid gap-3 ${hideCancel ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}>
+              {!hideCancel ? (
+                <button
+                  ref={cancelButtonRef}
+                  type="button"
+                  disabled={pending}
+                  onClick={onCancel}
+                  className="rounded-[14px] border border-[var(--color-dormmate-border)] bg-white px-4 py-2.5 text-sm font-semibold text-[#415a77] transition hover:bg-[var(--color-dormmate-surface)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+              ) : null}
               <button
-                ref={cancelButtonRef}
+                ref={confirmButtonRef}
                 type="button"
                 disabled={pending}
-                onClick={onCancel}
-                className="rounded-[14px] border border-[var(--color-dormmate-border)] bg-white px-4 py-2.5 text-sm font-semibold text-[#415a77] transition hover:bg-[var(--color-dormmate-surface)] disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={onConfirm}
+                className={`rounded-[14px] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 ${isDanger ? "bg-[#c65f43]" : "bg-[var(--color-dormmate-primary)]"}`}
               >
-                Cancel
+                {pending ? "Please wait..." : confirmLabel}
               </button>
-            ) : null}
-            <button
-              ref={confirmButtonRef}
-              type="button"
-              disabled={pending}
-              onClick={onConfirm}
-              className={`rounded-[14px] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 ${isDanger ? "bg-[#c65f43]" : "bg-[var(--color-dormmate-primary)]"}`}
-            >
-              {pending ? "Please wait..." : confirmLabel}
-            </button>
+            </div>
           </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </div>,
+    document.body,
   );
 }
