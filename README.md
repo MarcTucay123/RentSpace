@@ -38,10 +38,13 @@ Copy `.env.example` to `.env.local` and provide values from your Supabase projec
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 SUPABASE_SECRET_KEY=your_server_only_secret_key
 ```
 
 `SUPABASE_SECRET_KEY` is used only by privileged server-side account-management and maintenance scripts, including creating pending Admin registration requests. The legacy `SUPABASE_SERVICE_ROLE_KEY` name is also supported. Never expose this secret in browser code, commit it to Git, or prefix it with `NEXT_PUBLIC_`.
+
+Set `NEXT_PUBLIC_SITE_URL` to the deployed application origin in production, for example `https://example.com`. In Supabase **Authentication → URL Configuration**, set the same production origin as the Site URL and add `https://example.com/auth/callback` to the Redirect URLs allow list. For local password-reset testing, also allow `http://localhost:3000/auth/callback`.
 
 Admin registrations do not require a shared registration code. Every new Admin account starts in `pending` status and must be approved by an existing approved Admin from **Registration Approvals** before it can sign in.
 

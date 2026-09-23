@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
@@ -18,6 +19,7 @@ import { createClient } from "@/utils/supabase/server";
 
 const mobilePattern = /^(\+63|0)9\d{9}$/;
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+const passwordRecoveryCookie = "dormmate-password-recovery";
 
 function normalizeEmail(value: FormDataEntryValue | null) {
   return String(value ?? "").trim().toLowerCase();
@@ -29,6 +31,32 @@ function normalizeText(value: FormDataEntryValue | null) {
 
 function normalizeName(value: FormDataEntryValue | null) {
   return capitalizeFirstLetter(normalizeText(value));
+}
+
+function normalizeLoginRole(value: FormDataEntryValue | null): UserRole {
+  const role = normalizeText(value);
+  return role === "admin" ? "admin" : role === "landlord" ? "landlord" : "tenant";
+}
+
+async function getSiteOrigin() {
+  const requestHeaders = await headers();
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_VERCEL_URL;
+  const candidate = configuredUrl
+    ? configuredUrl.startsWith("http")
+      ? configuredUrl
+      : `https://${configuredUrl}`
+    : requestHeaders.get("origin");
+
+  if (!candidate) {
+    throw new Error("Unable to determine the application URL for password recovery.");
+  }
+
+  const url = new URL(candidate);
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error("The application URL must use HTTP or HTTPS.");
+  }
+
+  return url.origin;
 }
 
 function validateRegistration(formData: FormData) {
@@ -291,6 +319,93 @@ export async function login(
   }
 
   redirect(getRoleHomePath(typedProfile.role));
+}
+
+export async function requestPasswordReset(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const role = normalizeLoginRole(formData.get("role"));
+  const email = normalizeEmail(formData.get("email"));
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return {
+      success: false,
+      errors: { email: ["Enter a valid email address."] },
+      message: "Please enter the email address connected to your account.",
+    };
+  }
+
+  let siteOrigin: string;
+  try {
+    siteOrigin = await getSiteOrigin();
+  } catch {
+    return { success: false, message: "Password recovery is not configured correctly. Please contact support." };
+  }
+
+  const supabase = await createClient();
+  const callbackUrl = new URL("/auth/callback", siteOrigin);
+  callbackUrl.searchParams.set("role", role);
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: callbackUrl.toString(),
+  });
+
+  if (error) {
+    return {
+      success: false,
+      message: "We could not send a password reset email right now. Please wait a moment and try again.",
+    };
+  }
+
+  redirect(`/forgot-password/check-email?role=${role}`);
+}
+
+export async function resetRecoveredPassword(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const newPassword = String(formData.get("newPassword") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+  const errors: Record<string, string[]> = {};
+
+  if (!passwordPattern.test(newPassword)) {
+    errors.newPassword = ["Password must be at least 8 characters and include a letter, a number, and a special character."];
+  }
+  if (newPassword !== confirmPassword) {
+    errors.confirmPassword = ["Passwords do not match."];
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return { success: false, errors, message: "Please correct the password fields." };
+  }
+
+  const supabase = await createClient();
+  const { data: userResult, error: userError } = await supabase.auth.getUser();
+  const recoveryCookie = (await cookies()).get(passwordRecoveryCookie)?.value;
+
+  if (userError || !userResult.user || recoveryCookie !== userResult.user.id) {
+    return {
+      success: false,
+      message: "This password reset link is invalid or has expired. Please request a new one.",
+    };
+  }
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", userResult.user.id)
+    .maybeSingle();
+  const isAdmin = profile?.role === "admin";
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) {
+    return { success: false, message: "Unable to update your password right now. Please request a new reset link." };
+  }
+
+  (await cookies()).delete(passwordRecoveryCookie);
+  await supabase.auth.signOut();
+  redirect(`/reset-password/success?role=${isAdmin ? "admin" : "standard"}`);
 }
 
 export async function logout() {

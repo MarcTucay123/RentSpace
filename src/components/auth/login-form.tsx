@@ -74,7 +74,14 @@ export function LoginForm({ role, initialMessage }: LoginFormProps) {
       )}
 
       <TextField label="Email address" name="email" type="email" required autoComplete="email" error={state.errors?.email?.[0]} placeholder="name@email.com" />
-      <TextField label="Password" name="password" type="password" required autoComplete="current-password" error={state.errors?.password?.[0]} rightAdornment="Show" />
+      <div className="space-y-2">
+        <TextField label="Password" name="password" type="password" required autoComplete="current-password" error={state.errors?.password?.[0]} rightAdornment="Show" />
+        <div className="flex justify-end">
+          <Link href={`/forgot-password?role=${role}`} className="text-sm font-semibold text-[#315a57] hover:underline">
+            Forgot password?
+          </Link>
+        </div>
+      </div>
 
       <button
         type="submit"
