@@ -68,6 +68,7 @@ function validateRegistration(formData: FormData) {
   const email = normalizeEmail(formData.get("email"));
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirmPassword") ?? "");
+  const termsAccepted = formData.get("termsAccepted") === "accepted";
   const errors: Record<string, string[]> = {};
 
   if (!["admin", "landlord", "tenant"].includes(registrationRole)) {
@@ -86,6 +87,9 @@ function validateRegistration(formData: FormData) {
   }
   if (password !== confirmPassword) {
     errors.confirmPassword = ["Passwords do not match."];
+  }
+  if (!termsAccepted) {
+    errors.termsAccepted = ["You must accept the Terms of Service and Privacy Policy to register."];
   }
   return {
     registrationRole,

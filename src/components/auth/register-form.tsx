@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useCallback } from "react";
+import { useActionState, useCallback, useState } from "react";
 
 import { registerAccount } from "@/app/actions/auth";
+import { TermsPrivacyModal } from "@/components/auth/terms-privacy-modal";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import type { AuthFormState, RegistrationRole } from "@/lib/auth/types";
 
@@ -19,6 +20,8 @@ type RegisterFormProps = {
 
 export function RegisterForm({ role }: RegisterFormProps) {
   const [state, action, pending] = useActionState(registerAccount, initialState);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [policiesOpen, setPoliciesOpen] = useState(false);
   const router = useRouter();
   const roleLabel = role === "admin" ? "Admin" : role === "landlord" ? "Landlord" : "Tenant";
   const approvalLabel = role === "admin" || role === "landlord" ? "Admin Approval" : "Landlord Approval";
@@ -66,9 +69,37 @@ export function RegisterForm({ role }: RegisterFormProps) {
         <TextField label="Confirm password" name="confirmPassword" type="password" required error={state.errors?.confirmPassword?.[0]} autoComplete="new-password" placeholder="Repeat password" />
         </div>
 
+        <div className={`rounded-[18px] border p-4 ${state.errors?.termsAccepted ? "border-red-300 bg-red-50" : "border-[var(--color-dormmate-border)] bg-[var(--color-dormmate-surface)]/55"}`}>
+          <div className="flex items-start gap-3">
+            <input
+              id="termsAccepted"
+              name="termsAccepted"
+              type="checkbox"
+              value="accepted"
+              required
+              checked={acceptedTerms}
+              onChange={(event) => setAcceptedTerms(event.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 accent-[#315a57]"
+            />
+            <label htmlFor="termsAccepted" className="text-sm leading-6 text-[var(--color-dormmate-text)]">
+              I accept the Terms of Service and Privacy Policy.
+            </label>
+            <button
+              type="button"
+              aria-label="Read the Terms of Service and Privacy Policy"
+              title="Read the Terms of Service and Privacy Policy"
+              onClick={() => setPoliciesOpen(true)}
+              className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[#315a57] text-[11px] font-bold text-[#315a57] transition hover:bg-[#315a57] hover:text-white"
+            >
+              i
+            </button>
+          </div>
+          {state.errors?.termsAccepted?.[0] ? <p className="mt-2 pl-7 text-xs font-medium text-red-600">{state.errors.termsAccepted[0]}</p> : null}
+        </div>
+
         <button
         type="submit"
-        disabled={pending}
+        disabled={pending || !acceptedTerms}
         className="brand-button mx-auto block w-full max-w-[760px] rounded-[18px] px-5 py-3.5 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
       >
         {pending ? "Submitting registration..." : "Submit Registration"}
@@ -90,6 +121,7 @@ export function RegisterForm({ role }: RegisterFormProps) {
         onCancel={() => undefined}
         onConfirm={handleRegistrationAcknowledgement}
       />
+      <TermsPrivacyModal open={policiesOpen} onClose={() => setPoliciesOpen(false)} />
     </>
   );
 }
