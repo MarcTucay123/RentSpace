@@ -39,9 +39,10 @@ Copy `.env.example` to `.env.local` and provide values from your Supabase projec
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 SUPABASE_SECRET_KEY=your_server_only_secret_key
+ADMIN_REGISTRATION_CODE=choose_a_long_random_server_only_code
 ```
 
-`SUPABASE_SECRET_KEY` is used only by privileged server-side account-management and maintenance scripts. The legacy `SUPABASE_SERVICE_ROLE_KEY` name is also supported. Never expose either key in browser code, commit it to Git, or prefix it with `NEXT_PUBLIC_`.
+`SUPABASE_SECRET_KEY` is used only by privileged server-side account-management and maintenance scripts. The legacy `SUPABASE_SERVICE_ROLE_KEY` name is also supported. `ADMIN_REGISTRATION_CODE` protects the Admin registration form exposed from the Admin login page. Use a long random value and share it only with authorized administrators. Never expose either secret in browser code, commit it to Git, or prefix it with `NEXT_PUBLIC_`.
 
 ### 3. Prepare Supabase
 

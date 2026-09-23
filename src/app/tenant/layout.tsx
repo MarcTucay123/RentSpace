@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { requireTenantAccess } from "@/lib/auth/utils";
 import { getTenantNavigationCounts } from "@/lib/navigation/counts";
 import { getTenantAssignmentSummary } from "@/lib/tenant/data";
+import { getEnabledFeatureKeys } from "@/lib/features/access";
 
 function formatAssignmentLabel(assignment: Awaited<ReturnType<typeof getTenantAssignmentSummary>>) {
   if (!assignment?.unitName) return null;
@@ -14,9 +15,10 @@ function formatAssignmentLabel(assignment: Awaited<ReturnType<typeof getTenantAs
 
 export default async function TenantLayout({ children }: { children: ReactNode }) {
   const { profile } = await requireTenantAccess();
-  const [counts, assignment] = await Promise.all([
+  const [counts, assignment, enabledFeatures] = await Promise.all([
     getTenantNavigationCounts(profile.id),
     getTenantAssignmentSummary(profile.id),
+    getEnabledFeatureKeys(profile),
   ]);
 
   return (
@@ -27,12 +29,12 @@ export default async function TenantLayout({ children }: { children: ReactNode }
       subtitle="Your rental and dormitory information"
       navItems={[
         { href: "/tenant/dashboard", label: "Dashboard" },
-        { href: "/tenant/my-rental", label: "My Rental" },
-        { href: "/tenant/maintenance", label: "Maintenance" },
-        { href: "/tenant/messages", label: "Messages", badgeCount: counts.unreadMessages },
-        { href: "/tenant/notifications", label: "Notifications", badgeCount: counts.unreadNotifications },
+        enabledFeatures.has("my_rental") ? { href: "/tenant/my-rental", label: "My Rental" } : null,
+        enabledFeatures.has("maintenance") ? { href: "/tenant/maintenance", label: "Maintenance" } : null,
+        enabledFeatures.has("messages") ? { href: "/tenant/messages", label: "Messages", badgeCount: counts.unreadMessages } : null,
+        enabledFeatures.has("notifications") ? { href: "/tenant/notifications", label: "Notifications", badgeCount: counts.unreadNotifications } : null,
         { href: "/profile", label: "Profile Settings" },
-      ]}
+      ].filter((item): item is NonNullable<typeof item> => item !== null)}
     >
       {children}
     </AppShell>

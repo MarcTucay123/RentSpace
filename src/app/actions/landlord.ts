@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireLandlordAccess } from "@/lib/auth/utils";
+import { requireFeatureAccess } from "@/lib/features/access";
 import { getCurrentDueStatus } from "@/lib/rent/status";
 import { isMissingDatabaseColumn } from "@/lib/supabase/errors";
 import { createClient } from "@/utils/supabase/server";
@@ -57,7 +57,7 @@ export async function assignTenantToRentalSpace(
   _previousState: AssignmentFormState,
   formData: FormData,
 ): Promise<AssignmentFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("tenants");
   const supabase = await createClient();
   const tenantProfileId = String(formData.get("tenantProfileId") ?? "").trim();
   const { assignmentType, unitId, roomId, bedSpaceId, startDate, rentDueDate, monthlyRent, valid } = parseAssignmentInput(formData);
@@ -182,7 +182,7 @@ export async function updateTenantAssignment(
   _previousState: AssignmentFormState,
   formData: FormData,
 ): Promise<AssignmentFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("tenants");
   const supabase = await createClient();
   const assignmentId = String(formData.get("assignmentId") ?? "").trim();
   const { assignmentType, unitId, roomId, bedSpaceId, startDate, rentDueDate, monthlyRent, valid } = parseAssignmentInput(formData);
@@ -284,7 +284,7 @@ export async function updateTenantAssignment(
 }
 
 export async function completeTenantAssignment(assignmentId: string): Promise<AssignmentFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("tenants");
   const supabase = await createClient();
   const normalizedId = assignmentId.trim();
 
@@ -342,7 +342,7 @@ export async function completeTenantAssignment(assignmentId: string): Promise<As
 }
 
 export async function markLandlordNotificationAsRead(notificationId: string) {
-  const { profile } = await requireLandlordAccess();
+  const { profile } = await requireFeatureAccess("notifications");
   const supabase = await createClient();
   const { error } = await supabase
     .from("notifications")
@@ -358,7 +358,7 @@ export async function markLandlordNotificationAsRead(notificationId: string) {
 }
 
 export async function markAllLandlordNotificationsAsRead() {
-  const { profile } = await requireLandlordAccess();
+  const { profile } = await requireFeatureAccess("notifications");
   const supabase = await createClient();
   const { error } = await supabase
     .from("notifications")
@@ -377,7 +377,7 @@ export async function updateMaintenanceRequest(
   _previousState: AssignmentFormState,
   formData: FormData,
 ): Promise<AssignmentFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("maintenance");
   const supabase = await createClient();
   const requestId = String(formData.get("requestId") ?? "").trim();
   const status = String(formData.get("status") ?? "").trim();
@@ -412,7 +412,7 @@ export async function recordCashPayment(
   _previousState: AssignmentFormState,
   formData: FormData,
 ): Promise<AssignmentFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("payments");
   const supabase = await createClient();
   const obligationId = String(formData.get("rentalObligationId") ?? "").trim();
   const selectedStatus = String(formData.get("paymentStatus") ?? "").trim();
@@ -444,7 +444,7 @@ export async function recordCashPayment(
 }
 
 export async function verifyTenantPayment(paymentId: string): Promise<AssignmentFormState> {
-  const { profile } = await requireLandlordAccess();
+  const { profile } = await requireFeatureAccess("payments");
   const supabase = await createClient();
   const normalizedId = paymentId.trim();
   if (!normalizedId) return { success: false, message: "The payment could not be identified." };
@@ -478,7 +478,7 @@ export async function rejectTenantPayment(
   _previousState: AssignmentFormState,
   formData: FormData,
 ): Promise<AssignmentFormState> {
-  const { profile } = await requireLandlordAccess();
+  const { profile } = await requireFeatureAccess("payments");
   const supabase = await createClient();
   const paymentId = String(formData.get("paymentId") ?? "").trim();
   const rejectionReason = String(formData.get("rejectionReason") ?? "").trim();
@@ -522,7 +522,7 @@ export async function rejectTenantPayment(
 }
 
 export async function notifyTenantOfOverdueRent(obligationId: string): Promise<AssignmentFormState> {
-  const { profile } = await requireLandlordAccess();
+  const { profile } = await requireFeatureAccess("rent_monitoring");
   const supabase = await createClient();
   const normalizedId = obligationId.trim();
   if (!normalizedId) return { success: false, message: "The overdue obligation could not be identified." };

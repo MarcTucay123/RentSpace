@@ -12,14 +12,14 @@ type RegisterPageProps = {
 
 export default async function RegisterPage({ searchParams }: RegisterPageProps) {
   const params = await searchParams;
-  const role: RegistrationRole = params.role === "landlord" ? "landlord" : "tenant";
-  const roleLabel = role === "landlord" ? "Landlord" : "Tenant";
+  const role: RegistrationRole = params.role === "admin" ? "admin" : params.role === "landlord" ? "landlord" : "tenant";
+  const roleLabel = role === "admin" ? "Admin" : role === "landlord" ? "Landlord" : "Tenant";
 
   return (
     <AuthShell
       eyebrow={`${roleLabel} Registration`}
       title={`Create your ${roleLabel.toLowerCase()} account`}
-      description={role === "landlord" ? "Your account stays pending until an Admin approves it." : "Your account stays pending until a Landlord approves it."}
+      description={role === "admin" ? "Enter the protected Admin registration code to create an approved administrator account." : role === "landlord" ? "Your account stays pending until an Admin approves it." : "Your account stays pending until a Landlord approves it."}
       compactCard
       formOnly
     >

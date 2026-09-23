@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireLandlordAccess } from "@/lib/auth/utils";
+import { requireFeatureAccess } from "@/lib/features/access";
 import { capitalizeFirstLetter } from "@/lib/text/format";
 import type { UnitFormState } from "@/lib/units/types";
 import { createClient } from "@/utils/supabase/server";
@@ -26,7 +26,7 @@ export async function createUnit(
   _prevState: UnitFormState,
   formData: FormData,
 ): Promise<UnitFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("units");
   const supabase = await createClient();
 
   const unitName = nameValue(formData, "unitName");
@@ -74,7 +74,7 @@ export async function updateUnit(
   _prevState: UnitFormState,
   formData: FormData,
 ): Promise<UnitFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("units");
   const supabase = await createClient();
 
   const unitId = textValue(formData, "unitId");
@@ -117,7 +117,7 @@ export async function createRoom(
   _prevState: UnitFormState,
   formData: FormData,
 ): Promise<UnitFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("units");
   const supabase = await createClient();
 
   const unitId = textValue(formData, "unitId");
@@ -187,7 +187,7 @@ export async function updateRoom(
   _prevState: UnitFormState,
   formData: FormData,
 ): Promise<UnitFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("units");
   const supabase = await createClient();
 
   const unitId = textValue(formData, "unitId");
@@ -243,7 +243,7 @@ export async function createBedSpace(
   _prevState: UnitFormState,
   formData: FormData,
 ): Promise<UnitFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("units");
   const supabase = await createClient();
 
   const unitId = textValue(formData, "unitId");
@@ -286,7 +286,7 @@ export async function updateBedSpace(
   _prevState: UnitFormState,
   formData: FormData,
 ): Promise<UnitFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("units");
   const supabase = await createClient();
 
   const unitId = textValue(formData, "unitId");
@@ -323,7 +323,7 @@ export async function updateBedSpace(
 }
 
 export async function removeUnusedUnits(unitIds: string[]): Promise<UnitFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("units");
   const normalizedIds = Array.from(new Set(unitIds.map((id) => id.trim()).filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))));
   if (normalizedIds.length === 0) return { success: false, message: "Select at least one unit to remove." };
 
@@ -348,7 +348,7 @@ export async function removeUnusedUnitStructure(
   roomIds: string[],
   bedSpaceIds: string[],
 ): Promise<UnitFormState> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("units");
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const normalizedUnitId = unitId.trim();
   const normalizedRoomIds = Array.from(new Set(roomIds.map((id) => id.trim()).filter((id) => uuidPattern.test(id))));

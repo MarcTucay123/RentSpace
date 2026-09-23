@@ -1,4 +1,4 @@
-import { requireLandlordAccess } from "@/lib/auth/utils";
+import { requireFeatureAccess } from "@/lib/features/access";
 import { getLandlordMonthlyReport } from "@/lib/landlord/reports";
 
 function csvCell(value: string | number | null | undefined) {
@@ -16,7 +16,7 @@ function formatLocation(item: { unitName: string | null; roomNumber: string | nu
 }
 
 export async function GET(request: Request) {
-  const { profile } = await requireLandlordAccess();
+  const { profile } = await requireFeatureAccess("reports");
   const month = new URL(request.url).searchParams.get("month");
   const report = await getLandlordMonthlyReport(month);
   const { summary } = report;

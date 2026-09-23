@@ -20,8 +20,8 @@ type RegisterFormProps = {
 export function RegisterForm({ role }: RegisterFormProps) {
   const [state, action, pending] = useActionState(registerAccount, initialState);
   const router = useRouter();
-  const roleLabel = role === "landlord" ? "Landlord" : "Tenant";
-  const approvalLabel = role === "landlord" ? "Admin Approval" : "Landlord Approval";
+  const roleLabel = role === "admin" ? "Admin" : role === "landlord" ? "Landlord" : "Tenant";
+  const approvalLabel = role === "admin" ? "Immediate Activation" : role === "landlord" ? "Admin Approval" : "Landlord Approval";
   const handleRegistrationAcknowledgement = useCallback(() => {
     router.replace(`/login?role=${role}`);
   }, [role, router]);
@@ -33,7 +33,7 @@ export function RegisterForm({ role }: RegisterFormProps) {
           <div className="min-w-0">
             <h2 className="text-xl font-bold tracking-[-0.02em] text-[#294d4b] sm:text-[1.7rem]">Account details</h2>
             <p className="mt-1.5 text-xs leading-5 text-[#607b77] sm:mt-2 sm:text-sm">
-              Complete the form to request {roleLabel.toLowerCase()} access.
+              Complete the form to {role === "admin" ? "create" : "request"} {roleLabel.toLowerCase()} access.
             </p>
           </div>
           <div className="shrink-0 rounded-full bg-[#fff3ca] px-3 py-1.5 text-xs font-bold text-[#946b00] sm:px-4 sm:py-2 sm:text-sm">{roleLabel}</div>
@@ -42,6 +42,10 @@ export function RegisterForm({ role }: RegisterFormProps) {
         {!state.success ? <FormStatus message={state.message} success={state.success} /> : null}
 
         <input type="hidden" name="registrationRole" value={role} />
+
+        {role === "admin" ? (
+          <TextField label="Admin Registration Code" name="adminRegistrationCode" type="password" required error={state.errors?.adminRegistrationCode?.[0]} autoComplete="off" placeholder="Enter protected registration code" />
+        ) : null}
 
         <div className="grid gap-5 sm:grid-cols-2">
           <TextField label="First Name" name="firstName" required error={state.errors?.firstName?.[0]} autoComplete="given-name" placeholder="Enter first name" />
@@ -57,7 +61,7 @@ export function RegisterForm({ role }: RegisterFormProps) {
         <TextField label="Contact Number" name="mobileNumber" required placeholder="09xx xxx xxxx" error={state.errors?.mobileNumber?.[0]} autoComplete="tel" />
         <div className="rounded-[18px] border border-[#ead58e] bg-[#fff7db] px-5 py-5">
           <p className="text-xs font-semibold uppercase text-[#607b77] sm:text-sm">Initial account status</p>
-          <p className="mt-2 text-base font-bold uppercase text-[#946b00] sm:text-[1.1rem]">Pending {approvalLabel}</p>
+          <p className="mt-2 text-base font-bold uppercase text-[#946b00] sm:text-[1.1rem]">{role === "admin" ? approvalLabel : `Pending ${approvalLabel}`}</p>
         </div>
         </div>
 
@@ -84,7 +88,7 @@ export function RegisterForm({ role }: RegisterFormProps) {
       <ConfirmationModal
         open={state.success === true}
         title="Registration submitted successfully"
-        description={state.message ?? `Your ${roleLabel.toLowerCase()} account is pending ${role === "landlord" ? "Admin" : "Landlord"} approval.`}
+        description={state.message ?? (role === "admin" ? "Your Admin account is ready to use." : `Your ${roleLabel.toLowerCase()} account is pending ${role === "landlord" ? "Admin" : "Landlord"} approval.`)}
         confirmLabel="Okay"
         hideCancel
         onCancel={() => undefined}

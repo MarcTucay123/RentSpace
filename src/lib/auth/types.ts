@@ -49,4 +49,4 @@ export type ProfileFormState = {
   pendingEmail?: string;
 };
 
-export type RegistrationRole = "landlord" | "tenant";
+export type RegistrationRole = "admin" | "landlord" | "tenant";

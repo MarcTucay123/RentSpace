@@ -22,8 +22,8 @@ const errorMessages: Record<string, string> = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const roleParam = typeof params.role === "string" ? params.role : "tenant";
-  const publicRole = roleParam === "landlord" ? "landlord" : "tenant";
-  const roleLabel = publicRole === "landlord" ? "landlord" : "tenant";
+  const publicRole = roleParam === "admin" ? "admin" : roleParam === "landlord" ? "landlord" : "tenant";
+  const roleLabel = publicRole;
   const error = typeof params.error === "string" ? errorMessages[params.error] : undefined;
 
   return (
@@ -40,7 +40,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <p className="pt-3 text-sm text-[#607b77]">
             New {roleLabel}?{" "}
             <Link href={`/register?role=${publicRole}`} className="font-semibold text-[#315a57] hover:underline">
-              Create {roleLabel} account
+              {publicRole === "admin" ? "Register as an Admin" : `Create ${roleLabel} account`}
             </Link>
           </p>
         </div>

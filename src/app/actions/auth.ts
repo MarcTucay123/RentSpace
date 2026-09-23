@@ -11,7 +11,8 @@ import type {
   RegistrationRole,
   UserRole,
 } from "@/lib/auth/types";
-import { getRoleHomePath, requireAdminAccess, requireLandlordAccess } from "@/lib/auth/utils";
+import { getRoleHomePath, requireAdminAccess } from "@/lib/auth/utils";
+import { requireFeatureAccess } from "@/lib/features/access";
 import { capitalizeFirstLetter } from "@/lib/text/format";
 import { createClient } from "@/utils/supabase/server";
 
@@ -41,7 +42,7 @@ function validateRegistration(formData: FormData) {
   const confirmPassword = String(formData.get("confirmPassword") ?? "");
   const errors: Record<string, string[]> = {};
 
-  if (!["landlord", "tenant"].includes(registrationRole)) {
+  if (!["admin", "landlord", "tenant"].includes(registrationRole)) {
     errors.registrationRole = ["Select a valid registration role."];
   }
   if (!firstName) errors.firstName = ["First name is required."];
@@ -105,6 +106,76 @@ export async function registerAccount(
 
   if (Object.keys(errors).length > 0) {
     return { success: false, errors, message: "Please correct the highlighted fields." };
+  }
+
+  if (registrationRole === "admin") {
+    const configuredCode = process.env.ADMIN_REGISTRATION_CODE;
+    const submittedCode = normalizeText(formData.get("adminRegistrationCode"));
+
+    if (!configuredCode) {
+      return { success: false, message: "Admin registration is not configured. Contact the system owner." };
+    }
+
+    if (!submittedCode || submittedCode !== configuredCode) {
+      return {
+        success: false,
+        errors: { adminRegistrationCode: ["Enter the valid Admin registration code."] },
+        message: "Admin registration code is invalid.",
+      };
+    }
+
+    const adminClient = getServiceRoleClient();
+    const { data, error } = await adminClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        first_name: firstName,
+        middle_name: middleName || null,
+        last_name: lastName,
+        mobile_number: mobileNumber,
+      },
+    });
+
+    if (error || !data.user) {
+      return {
+        success: false,
+        message: error?.message.toLowerCase().includes("already")
+          ? "An account with this email already exists."
+          : "Unable to create the Admin account right now.",
+      };
+    }
+
+    const { error: profileError } = await adminClient.from("users").upsert(
+      {
+        id: data.user.id,
+        first_name: firstName,
+        middle_name: middleName || null,
+        last_name: lastName,
+        mobile_number: mobileNumber,
+        email,
+        role: "admin",
+        account_status: "approved",
+      },
+      { onConflict: "id" },
+    );
+
+    if (profileError) {
+      await adminClient.auth.admin.deleteUser(data.user.id);
+      return { success: false, message: "Admin account provisioning failed and was rolled back." };
+    }
+
+    const { error: tenantProfileError } = await adminClient
+      .from("tenant_profiles")
+      .delete()
+      .eq("profile_id", data.user.id);
+
+    if (tenantProfileError) {
+      await adminClient.auth.admin.deleteUser(data.user.id);
+      return { success: false, message: "Admin account cleanup failed and was rolled back." };
+    }
+
+    return { success: true, message: "Admin account registered successfully. You can now sign in." };
   }
 
   const supabase = await createClient();
@@ -275,7 +346,7 @@ export async function rejectLandlord(profileId: string) {
 }
 
 export async function approveTenant(profileId: string) {
-  await requireLandlordAccess();
+  await requireFeatureAccess("approvals");
   const supabase = await createClient();
   const { error } = await supabase
     .from("users")
@@ -289,7 +360,7 @@ export async function approveTenant(profileId: string) {
 }
 
 export async function rejectTenant(profileId: string) {
-  await requireLandlordAccess();
+  await requireFeatureAccess("approvals");
   const supabase = await createClient();
   const { error } = await supabase
     .from("users")
@@ -358,93 +429,6 @@ export async function manageUserAccount(
 
   revalidatePath("/admin/users");
   return { success: true, message: "Unassigned Tenant account removed." };
-}
-
-export async function createAdminAccount(
-  _prevState: AuthFormState,
-  formData: FormData,
-): Promise<AuthFormState> {
-  await requireAdminAccess();
-
-  const firstName = normalizeName(formData.get("firstName"));
-  const middleName = normalizeName(formData.get("middleName"));
-  const lastName = normalizeName(formData.get("lastName"));
-  const mobileNumber = normalizeText(formData.get("mobileNumber"));
-  const email = normalizeEmail(formData.get("email"));
-  const password = String(formData.get("password") ?? "");
-  const confirmPassword = String(formData.get("confirmPassword") ?? "");
-
-  const errors: Record<string, string[]> = {};
-
-  if (!firstName) errors.firstName = ["First name is required."];
-  if (!lastName) errors.lastName = ["Last name is required."];
-  if (!mobilePattern.test(mobileNumber)) {
-    errors.mobileNumber = ["Enter a valid Philippine mobile number."];
-  }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.email = ["Enter a valid email address."];
-  }
-  if (!passwordPattern.test(password)) {
-    errors.password = ["Password must be at least 8 characters and include a letter, a number, and a special character."];
-  }
-  if (password !== confirmPassword) {
-    errors.confirmPassword = ["Passwords do not match."];
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { success: false, errors, message: "Please correct the new admin details." };
-  }
-
-  const adminClient = getServiceRoleClient();
-  const { data, error } = await adminClient.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: {
-      first_name: firstName,
-      middle_name: middleName || null,
-      last_name: lastName,
-      mobile_number: mobileNumber,
-    },
-  });
-
-  if (error || !data.user) {
-    return {
-      success: false,
-      message: error?.message.toLowerCase().includes("already")
-        ? "An account with this email already exists."
-        : "Unable to create the admin account right now.",
-    };
-  }
-
-  const supabase = await createClient();
-  const { error: profileError } = await supabase.from("users").upsert(
-    {
-      id: data.user.id,
-      first_name: firstName,
-      middle_name: middleName || null,
-      last_name: lastName,
-      mobile_number: mobileNumber,
-      email,
-      role: "admin",
-      account_status: "approved",
-    },
-    { onConflict: "id" },
-  );
-
-  if (profileError) {
-    await adminClient.auth.admin.deleteUser(data.user.id);
-    return {
-      success: false,
-      message: "Admin Auth account creation succeeded, but profile provisioning failed. The account was rolled back.",
-    };
-  }
-
-  revalidatePath("/admin/dashboard");
-  return {
-    success: true,
-    message: "New Admin account created successfully.",
-  };
 }
 
 export async function updateProfile(

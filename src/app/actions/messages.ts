@@ -2,16 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireAuthenticatedProfile } from "@/lib/auth/utils";
+import { requireFeatureAccess } from "@/lib/features/access";
 import { createClient } from "@/utils/supabase/server";
 
 export type MessageFormState = { success?: boolean; message?: string };
 
 export async function sendDirectMessage(_state: MessageFormState, formData: FormData): Promise<MessageFormState> {
-  const { profile } = await requireAuthenticatedProfile();
-  if (profile.account_status !== "approved" || !["tenant", "landlord"].includes(profile.role)) {
-    return { success: false, message: "Your account cannot send messages." };
-  }
+  const { profile } = await requireFeatureAccess("messages");
 
   const recipientProfileId = String(formData.get("recipientProfileId") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
@@ -45,7 +42,7 @@ export async function sendDirectMessage(_state: MessageFormState, formData: Form
 }
 
 export async function markConversationRead(contactProfileId: string) {
-  const { profile } = await requireAuthenticatedProfile();
+  const { profile } = await requireFeatureAccess("messages");
   const supabase = await createClient();
   await supabase
     .from("messages")

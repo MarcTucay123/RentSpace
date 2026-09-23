@@ -1,6 +1,6 @@
 "use server";
 
-import { requireLandlordAccess } from "@/lib/auth/utils";
+import { requireFeatureAccess } from "@/lib/features/access";
 import {
   getLandlordMaintenanceRequests,
   getLandlordNotifications,
@@ -85,7 +85,7 @@ function getAdviceResponse({
 }
 
 export async function askLandlordAssistant(rawQuestion: string, recentUserQuestions: string[] = []): Promise<AssistantReply> {
-  await requireLandlordAccess();
+  await requireFeatureAccess("ai_assistant");
 
   const question = rawQuestion.trim();
   const generatedAt = new Date().toISOString();

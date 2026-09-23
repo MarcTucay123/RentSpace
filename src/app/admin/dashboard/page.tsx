@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { CreateAdminForm } from "@/components/admin/create-admin-form";
 import type { Profile } from "@/lib/auth/types";
 import { getDisplayName, requireAdminAccess } from "@/lib/auth/utils";
 import { createClient } from "@/utils/supabase/server";
@@ -99,10 +98,6 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/users" className="mt-5 inline-flex text-sm font-semibold text-[var(--color-dormmate-primary)]">View all managed accounts →</Link>
         </article>
       </section>
-
-      <div id="admin-continuity">
-        <CreateAdminForm />
-      </div>
     </div>
   );
 }

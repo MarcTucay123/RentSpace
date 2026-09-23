@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireTenantAccess } from "@/lib/auth/utils";
+import { requireFeatureAccess } from "@/lib/features/access";
 import { createClient } from "@/utils/supabase/server";
 
 export type TenantActionState = {
@@ -43,7 +43,7 @@ export async function submitPaymentProof(
   _previousState: TenantActionState,
   formData: FormData,
 ): Promise<TenantActionState> {
-  const { profile } = await requireTenantAccess();
+  const { profile } = await requireFeatureAccess("my_rental");
   const supabase = await createClient();
   const obligationId = String(formData.get("rentalObligationId") ?? "").trim();
   const file = formData.get("paymentProof");
@@ -100,7 +100,7 @@ export async function submitMaintenanceRequest(
   _prevState: TenantActionState,
   formData: FormData,
 ): Promise<TenantActionState> {
-  const { profile } = await requireTenantAccess();
+  const { profile } = await requireFeatureAccess("maintenance");
   const supabase = await createClient();
 
   const location = String(formData.get("location") ?? "").trim();
@@ -180,7 +180,7 @@ export async function submitMaintenanceRequest(
 }
 
 export async function markNotificationAsRead(notificationId: string) {
-  const { profile } = await requireTenantAccess();
+  const { profile } = await requireFeatureAccess("notifications");
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -199,7 +199,7 @@ export async function markNotificationAsRead(notificationId: string) {
 }
 
 export async function markAllTenantNotificationsAsRead() {
-  const { profile } = await requireTenantAccess();
+  const { profile } = await requireFeatureAccess("notifications");
   const supabase = await createClient();
   const { error } = await supabase
     .from("notifications")
