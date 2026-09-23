@@ -19,7 +19,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
     <AuthShell
       eyebrow={`${roleLabel} Registration`}
       title={`Create your ${roleLabel.toLowerCase()} account`}
-      description={role === "admin" ? "Enter the protected Admin registration code to create an approved administrator account." : role === "landlord" ? "Your account stays pending until an Admin approves it." : "Your account stays pending until a Landlord approves it."}
+      description={role === "admin" ? "Your account stays pending until an existing Admin approves it." : role === "landlord" ? "Your account stays pending until an Admin approves it." : "Your account stays pending until a Landlord approves it."}
       compactCard
       formOnly
     >

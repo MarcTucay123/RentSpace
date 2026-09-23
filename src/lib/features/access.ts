@@ -42,7 +42,7 @@ export async function requireFeatureAccess(featureKey: FeatureKey) {
 
   const enabledFeatures = await getEnabledFeatureKeys(profile);
   if (!enabledFeatures.has(featureKey)) {
-    redirect(`/${profile.role}/dashboard?notice=feature-disabled`);
+    redirect("/profile?notice=feature-disabled");
   }
 
   return { user, profile };

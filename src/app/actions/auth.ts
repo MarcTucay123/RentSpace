@@ -109,21 +109,6 @@ export async function registerAccount(
   }
 
   if (registrationRole === "admin") {
-    const configuredCode = process.env.ADMIN_REGISTRATION_CODE;
-    const submittedCode = normalizeText(formData.get("adminRegistrationCode"));
-
-    if (!configuredCode) {
-      return { success: false, message: "Admin registration is not configured. Contact the system owner." };
-    }
-
-    if (!submittedCode || submittedCode !== configuredCode) {
-      return {
-        success: false,
-        errors: { adminRegistrationCode: ["Enter the valid Admin registration code."] },
-        message: "Admin registration code is invalid.",
-      };
-    }
-
     const adminClient = getServiceRoleClient();
     const { data, error } = await adminClient.auth.admin.createUser({
       email,
@@ -134,6 +119,7 @@ export async function registerAccount(
         middle_name: middleName || null,
         last_name: lastName,
         mobile_number: mobileNumber,
+        registration_role: "admin",
       },
     });
 
@@ -155,7 +141,7 @@ export async function registerAccount(
         mobile_number: mobileNumber,
         email,
         role: "admin",
-        account_status: "approved",
+        account_status: "pending",
       },
       { onConflict: "id" },
     );
@@ -175,7 +161,7 @@ export async function registerAccount(
       return { success: false, message: "Admin account cleanup failed and was rolled back." };
     }
 
-    return { success: true, message: "Admin account registered successfully. You can now sign in." };
+    return { success: true, message: "Registration submitted successfully. Your Admin account is pending approval by an existing Admin." };
   }
 
   const supabase = await createClient();
@@ -327,6 +313,44 @@ export async function approveLandlord(profileId: string) {
 
   if (error || !updated) throw new Error(error?.message || "Unable to approve this landlord registration.");
   revalidatePath("/admin/landlords");
+}
+
+export async function approveAdmin(profileId: string) {
+  const { profile } = await requireAdminAccess();
+  if (profile.id === profileId) throw new Error("You cannot approve your own Admin registration.");
+
+  const supabase = await createClient();
+  const { data: updated, error } = await supabase
+    .from("users")
+    .update({ account_status: "approved" })
+    .eq("id", profileId)
+    .eq("role", "admin")
+    .eq("account_status", "pending")
+    .select("id")
+    .maybeSingle();
+
+  if (error || !updated) throw new Error(error?.message || "Unable to approve this Admin registration.");
+  revalidatePath("/admin/landlords");
+  revalidatePath("/admin/dashboard");
+}
+
+export async function rejectAdmin(profileId: string) {
+  const { profile } = await requireAdminAccess();
+  if (profile.id === profileId) throw new Error("You cannot reject your own Admin registration.");
+
+  const supabase = await createClient();
+  const { data: updated, error } = await supabase
+    .from("users")
+    .update({ account_status: "rejected" })
+    .eq("id", profileId)
+    .eq("role", "admin")
+    .eq("account_status", "pending")
+    .select("id")
+    .maybeSingle();
+
+  if (error || !updated) throw new Error(error?.message || "Unable to reject this Admin registration.");
+  revalidatePath("/admin/landlords");
+  revalidatePath("/admin/dashboard");
 }
 
 export async function rejectLandlord(profileId: string) {

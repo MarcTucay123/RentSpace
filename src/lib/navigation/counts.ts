@@ -7,15 +7,24 @@ async function safeCount(query: PromiseLike<{ count: number | null; error: unkno
 
 export async function getAdminNavigationCounts() {
   const supabase = await createClient();
-  const landlordApprovals = await safeCount(
-    supabase
-      .from("users")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "landlord")
-      .eq("account_status", "pending"),
-  );
+  const [adminApprovals, landlordApprovals] = await Promise.all([
+    safeCount(
+      supabase
+        .from("users")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "admin")
+        .eq("account_status", "pending"),
+    ),
+    safeCount(
+      supabase
+        .from("users")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "landlord")
+        .eq("account_status", "pending"),
+    ),
+  ]);
 
-  return { landlordApprovals };
+  return { registrationApprovals: adminApprovals + landlordApprovals };
 }
 
 export async function getLandlordNavigationCounts(profileId: string) {

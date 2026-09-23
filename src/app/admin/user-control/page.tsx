@@ -1,4 +1,5 @@
 import { FeatureToggle } from "@/components/admin/feature-toggle";
+import { DisableAllFeaturesButton } from "@/components/admin/disable-all-features-button";
 import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { FilterNavigation } from "@/components/ui/filter-navigation";
 import { ListSearchForm } from "@/components/ui/list-search-form";
@@ -47,11 +48,16 @@ export default async function UserControlPage({ searchParams }: UserControlPageP
   return (
     <div className="space-y-4">
       <section className="rounded-[1.35rem] bg-white p-4 shadow-[var(--shadow)] sm:p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-dormmate-primary)]">Administration</p>
-        <h1 className="mt-2 text-[1.55rem] font-semibold tracking-tight sm:text-[1.8rem]">User Control</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--color-dormmate-muted)]">
-          Turn individual Landlord and Tenant modules on or off. Disabled modules disappear from that user&apos;s side panel and direct page access is blocked. Dashboard and Profile Settings always remain available.
-        </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-dormmate-primary)]">Administration</p>
+            <h1 className="mt-2 text-[1.55rem] font-semibold tracking-tight sm:text-[1.8rem]">User Control</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--color-dormmate-muted)]">
+              Turn individual Landlord and Tenant modules, including Dashboard, on or off. Disabled modules disappear from that user&apos;s side panel and direct page access is blocked. Profile Settings always remains available.
+            </p>
+          </div>
+          <DisableAllFeaturesButton />
+        </div>
       </section>
 
       <section className="rounded-[1.35rem] bg-white p-4 shadow-[var(--shadow)] sm:p-5">

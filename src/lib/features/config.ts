@@ -1,6 +1,7 @@
 import type { UserRole } from "@/lib/auth/types";
 
 export const landlordFeatures = [
+  { key: "dashboard", label: "Dashboard", href: "/landlord/dashboard" },
   { key: "approvals", label: "Approvals", href: "/landlord/approvals" },
   { key: "units", label: "Units", href: "/landlord/units" },
   { key: "tenants", label: "Tenants", href: "/landlord/tenants" },
@@ -14,6 +15,7 @@ export const landlordFeatures = [
 ] as const;
 
 export const tenantFeatures = [
+  { key: "dashboard", label: "Dashboard", href: "/tenant/dashboard" },
   { key: "my_rental", label: "My Rental", href: "/tenant/my-rental" },
   { key: "maintenance", label: "Maintenance", href: "/tenant/maintenance" },
   { key: "messages", label: "Messages", href: "/tenant/messages" },

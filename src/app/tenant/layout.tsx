@@ -28,7 +28,7 @@ export default async function TenantLayout({ children }: { children: ReactNode }
       title="Tenant Dashboard"
       subtitle="Your rental and dormitory information"
       navItems={[
-        { href: "/tenant/dashboard", label: "Dashboard" },
+        enabledFeatures.has("dashboard") ? { href: "/tenant/dashboard", label: "Dashboard" } : null,
         enabledFeatures.has("my_rental") ? { href: "/tenant/my-rental", label: "My Rental" } : null,
         enabledFeatures.has("maintenance") ? { href: "/tenant/maintenance", label: "Maintenance" } : null,
         enabledFeatures.has("messages") ? { href: "/tenant/messages", label: "Messages", badgeCount: counts.unreadMessages } : null,

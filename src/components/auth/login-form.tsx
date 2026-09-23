@@ -41,7 +41,7 @@ export function LoginForm({ role, initialMessage }: LoginFormProps) {
 
       {isAdmin ? (
         <div className="space-y-2 rounded-2xl border border-[#ead58e] bg-[#fff7db] px-4 py-3 text-xs leading-5 text-[#765800] sm:text-sm">
-          <p>Approved administrator accounts only.</p>
+          <p>Admin registrations require approval from an existing administrator before sign-in.</p>
           <Link href="/register?role=admin" className="inline-flex font-semibold text-[#315a57] hover:underline">
             Register as an Admin
           </Link>

@@ -24,10 +24,12 @@ export default async function AdminDashboardPage() {
   if (error) throw new Error("Unable to load the administrative account overview.");
 
   const accounts = data ?? [];
+  const admins = accounts.filter((account) => account.role === "admin");
   const managedAccounts = accounts.filter((account) => account.role !== "admin");
   const landlords = accounts.filter((account) => account.role === "landlord");
   const tenants = accounts.filter((account) => account.role === "tenant");
   const pendingLandlords = landlords.filter((account) => account.account_status === "pending");
+  const pendingAdmins = admins.filter((account) => account.account_status === "pending");
   const pendingTenants = tenants.filter((account) => account.account_status === "pending");
   const approvedCount = managedAccounts.filter((account) => account.account_status === "approved").length;
   const inactiveCount = managedAccounts.filter((account) => account.account_status === "inactive").length;
@@ -44,7 +46,7 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="flex flex-wrap gap-2 lg:justify-end">
             <span className="rounded-full bg-[#dcebdd] px-3 py-1.5 text-xs font-semibold text-[#2f6737]">Administrator account</span>
-            {pendingLandlords.length > 0 ? <span className="rounded-full bg-[#fff4d9] px-3 py-1.5 text-xs font-semibold text-[#8c6218]">{pendingLandlords.length} landlord approval{pendingLandlords.length === 1 ? "" : "s"} pending</span> : null}
+            {pendingAdmins.length + pendingLandlords.length > 0 ? <span className="rounded-full bg-[#fff4d9] px-3 py-1.5 text-xs font-semibold text-[#8c6218]">{pendingAdmins.length + pendingLandlords.length} Admin/landlord approval{pendingAdmins.length + pendingLandlords.length === 1 ? "" : "s"} pending</span> : null}
           </div>
         </div>
       </section>
@@ -53,7 +55,7 @@ export default async function AdminDashboardPage() {
         {[
           { label: "All accounts", value: managedAccounts.length, detail: "Landlords + tenants", tone: "text-[var(--color-dormmate-text-strong)]" },
           { label: "Approved", value: approvedCount, detail: "Active access", tone: "text-[#1b263b]" },
-          { label: "Pending reviews", value: pendingLandlords.length + pendingTenants.length, detail: `${pendingLandlords.length} landlord · ${pendingTenants.length} tenant`, tone: "text-[#a87419]" },
+          { label: "Pending reviews", value: pendingAdmins.length + pendingLandlords.length + pendingTenants.length, detail: `${pendingAdmins.length} Admin · ${pendingLandlords.length} landlord · ${pendingTenants.length} tenant`, tone: "text-[#a87419]" },
           { label: "Inactive", value: inactiveCount, detail: "No access", tone: "text-[#647169]" },
         ].map((stat) => (
           <article key={stat.label} className="interactive-card surface-elevated min-w-0 rounded-[1.2rem] bg-white/90 p-4 sm:p-5">
@@ -75,7 +77,7 @@ export default async function AdminDashboardPage() {
             </Link>
             <Link href="/admin/landlords" className="group flex items-center gap-4 rounded-[1rem] border border-[var(--color-dormmate-border)] p-4 transition hover:-translate-y-0.5 hover:border-[var(--color-dormmate-primary)] hover:bg-[#f8f8f6]">
               <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#fff4d9] font-bold text-[#9a6b16]">L</span>
-              <span className="min-w-0 flex-1"><strong className="block text-[var(--color-dormmate-text-strong)]">Landlord approvals</strong><span className="mt-1 block text-sm text-[var(--color-dormmate-muted)]">{pendingLandlords.length} waiting for review</span></span>
+              <span className="min-w-0 flex-1"><strong className="block text-[var(--color-dormmate-text-strong)]">Registration approvals</strong><span className="mt-1 block text-sm text-[var(--color-dormmate-muted)]">{pendingAdmins.length + pendingLandlords.length} waiting for review</span></span>
               <span aria-hidden="true" className="text-lg text-[var(--color-dormmate-primary)]">→</span>
             </Link>
           </div>

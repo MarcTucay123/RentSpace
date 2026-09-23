@@ -2,13 +2,13 @@
 
 import { useCallback, useState, useTransition } from "react";
 
-import { approveLandlord, approveTenant, rejectLandlord, rejectTenant } from "@/app/actions/auth";
+import { approveAdmin, approveLandlord, approveTenant, rejectAdmin, rejectLandlord, rejectTenant } from "@/app/actions/auth";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import type { Profile } from "@/lib/auth/types";
 
 type ApprovalsTableProps = {
   profiles: Profile[];
-  mode?: "tenant" | "landlord";
+  mode?: "tenant" | "landlord" | "admin";
 };
 
 type PendingConfirmation = {
@@ -19,8 +19,7 @@ type PendingConfirmation = {
 export function ApprovalsTable({ profiles, mode = "tenant" }: ApprovalsTableProps) {
   const [isPending, startTransition] = useTransition();
   const [confirmation, setConfirmation] = useState<PendingConfirmation>(null);
-  const isLandlordMode = mode === "landlord";
-  const accountType = isLandlordMode ? "landlord" : "tenant";
+  const accountType = mode;
 
   const closeConfirmation = useCallback(() => {
     if (!isPending) setConfirmation(null);
@@ -32,9 +31,13 @@ export function ApprovalsTable({ profiles, mode = "tenant" }: ApprovalsTableProp
     const { profile, action } = confirmation;
     startTransition(async () => {
       if (action === "approve") {
-        await (isLandlordMode ? approveLandlord(profile.id) : approveTenant(profile.id));
+        if (mode === "admin") await approveAdmin(profile.id);
+        else if (mode === "landlord") await approveLandlord(profile.id);
+        else await approveTenant(profile.id);
       } else {
-        await (isLandlordMode ? rejectLandlord(profile.id) : rejectTenant(profile.id));
+        if (mode === "admin") await rejectAdmin(profile.id);
+        else if (mode === "landlord") await rejectLandlord(profile.id);
+        else await rejectTenant(profile.id);
       }
       setConfirmation(null);
     });
@@ -45,13 +48,15 @@ export function ApprovalsTable({ profiles, mode = "tenant" }: ApprovalsTableProp
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-dormmate-primary)]">
-            {isLandlordMode ? "Landlord Approvals" : "Tenant Approvals"}
+            {mode === "admin" ? "Admin Approvals" : mode === "landlord" ? "Landlord Approvals" : "Tenant Approvals"}
           </p>
           <h2 className="mt-2 text-[1.45rem] font-semibold tracking-tight sm:text-[1.65rem]">Pending registrations</h2>
           <p className="mt-2 text-sm text-[var(--color-dormmate-muted)]">
-            {isLandlordMode
-              ? "Review new landlord accounts before granting dashboard access."
-              : "Review new tenant accounts before granting portal access."}
+            {mode === "admin"
+              ? "Review new Admin accounts before granting system-level access."
+              : mode === "landlord"
+                ? "Review new landlord accounts before granting portal access."
+                : "Review new tenant accounts before granting portal access."}
           </p>
         </div>
         <div className="text-sm text-[var(--color-dormmate-muted)]">
@@ -61,9 +66,7 @@ export function ApprovalsTable({ profiles, mode = "tenant" }: ApprovalsTableProp
 
       {profiles.length === 0 ? (
         <div className="mt-5 rounded-[1rem] border border-dashed border-[var(--color-dormmate-border)] bg-[var(--color-dormmate-surface)] p-5 text-sm text-[var(--color-dormmate-muted)]">
-          {isLandlordMode
-            ? "There are no pending landlord registrations at the moment."
-            : "There are no pending tenant registrations at the moment."}
+          There are no pending {accountType} registrations at the moment.
         </div>
       ) : (
         <div className="mt-5 overflow-hidden rounded-[1.25rem] border border-[var(--color-dormmate-border)]">

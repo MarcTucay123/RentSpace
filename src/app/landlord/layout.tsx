@@ -18,7 +18,7 @@ export default async function LandlordLayout({ children }: { children: ReactNode
       title="Landlord Portal"
       subtitle="Manage units, approvals, and rental setup in a laptop-friendly RentSpace workspace."
       navItems={[
-        { href: "/landlord/dashboard", label: "Dashboard" },
+        enabledFeatures.has("dashboard") ? { href: "/landlord/dashboard", label: "Dashboard" } : null,
         enabledFeatures.has("approvals") ? { href: "/landlord/approvals", label: "Approvals", badgeCount: counts.tenantApprovals } : null,
         enabledFeatures.has("units") ? { href: "/landlord/units", label: "Units" } : null,
         enabledFeatures.has("tenants") ? { href: "/landlord/tenants", label: "Tenants" } : null,
