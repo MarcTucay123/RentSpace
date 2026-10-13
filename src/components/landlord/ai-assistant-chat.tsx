@@ -42,7 +42,7 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
     {
       id: "welcome",
       role: "assistant",
-      body: `Hi ${landlordName}. I’m powered by OpenAI and can review your authorized RentSpace records, recommend operational next steps, prioritize follow-ups, and draft Tenant messages. I remain read-only and system-scoped. What would you like help with?`,
+      body: `Hi ${landlordName}. I’m the RentSpace Assistant. I can review your authorized RentSpace records, recommend operational next steps, prioritize follow-ups, and draft Tenant messages. I remain read-only and system-scoped. What would you like help with?`,
       generatedAt: initialGeneratedAt,
     },
   ]);
@@ -129,7 +129,7 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
             <div className="flex justify-start">
               <div className="rounded-[18px] rounded-bl-md border border-[var(--color-dormmate-border)] bg-white px-4 py-3 text-sm text-[var(--color-dormmate-muted)]">
                 <span className="inline-flex items-center gap-1" aria-label="Assistant is analyzing your data">
-                  Asking OpenAI to analyze your data<span className="animate-pulse">…</span>
+                  RentSpace Assistant is analyzing your data<span className="animate-pulse">…</span>
                 </span>
               </div>
             </div>

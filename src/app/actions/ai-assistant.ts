@@ -147,7 +147,7 @@ export async function askLandlordAssistant(rawQuestion: string, recentUserQuesti
   } catch (error) {
     if (error instanceof OpenAIConfigurationError) {
       return {
-        answer: "The OpenAI assistant is not configured yet. Add OPENAI_API_KEY to the server environment, then restart RentSpace.",
+        answer: "RentSpace Assistant is not configured yet. Please contact the system administrator.",
         generatedAt,
         error: true,
       };
@@ -156,7 +156,7 @@ export async function askLandlordAssistant(rawQuestion: string, recentUserQuesti
     if (error instanceof OpenAIRequestError) {
       console.error("OpenAI assistant request failed:", { status: error.status, requestId: error.requestId });
       return {
-        answer: "OpenAI could not complete the request right now. Please try again shortly or ask a more focused RentSpace question.",
+        answer: "RentSpace Assistant could not complete the request right now. Please try again shortly or ask a more focused RentSpace question.",
         generatedAt,
         error: true,
       };

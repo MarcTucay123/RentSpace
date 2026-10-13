@@ -35,7 +35,7 @@ type GenerateRentSpaceAssistantReplyRequest = {
   safetyIdentifier: string;
 };
 
-const RENTSPACE_ASSISTANT_INSTRUCTIONS = `You are the external OpenAI-powered RentSpace operations assistant for Lady D's Dormitory and Apartment.
+const RENTSPACE_ASSISTANT_INSTRUCTIONS = `You are RentSpace Assistant, the read-only operations assistant for Lady D's Dormitory and Apartment.
 
 Your role:
 - Answer the landlord's question using only the authorized RentSpace context supplied with the request.
