@@ -23,6 +23,11 @@ export type AssistantReply = {
   error?: boolean;
 };
 
+export type AssistantConversationMessage = {
+  role: "assistant" | "user";
+  content: string;
+};
+
 /** Selects the most useful RentSpace page to show beside an AI response. */
 function getRelatedPage(question: string) {
   const normalized = question.toLowerCase();
@@ -126,7 +131,7 @@ function createAssistantContext(
 }
 
 /** Authorizes a landlord, loads permitted data, and requests a read-only AI answer. */
-export async function askLandlordAssistant(rawQuestion: string, recentUserQuestions: string[] = []): Promise<AssistantReply> {
+export async function askLandlordAssistant(rawQuestion: string, recentConversation: AssistantConversationMessage[] = []): Promise<AssistantReply> {
   await requireFeatureAccess("ai_assistant");
   const question = rawQuestion.trim();
   const generatedAt = new Date().toISOString();
@@ -139,7 +144,10 @@ export async function askLandlordAssistant(rawQuestion: string, recentUserQuesti
     const context = createAssistantContext(records);
     const answer = await generateRentSpaceAssistantReply({
       question,
-      recentUserQuestions: recentUserQuestions.slice(-3),
+      recentConversation: recentConversation
+        .filter((message) => message.role === "assistant" || message.role === "user")
+        .slice(-8)
+        .map((message) => ({ role: message.role, content: message.content.slice(0, 1_000) })),
       context,
     });
 

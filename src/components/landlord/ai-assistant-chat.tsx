@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState, useTransition } from "react";
 
-import { askLandlordAssistant, type AssistantReply } from "@/app/actions/ai-assistant";
+import type { AssistantReply } from "@/app/actions/ai-assistant";
 
 type ChatMessage = {
   id: string;
@@ -13,6 +13,7 @@ type ChatMessage = {
   relatedHref?: string;
   relatedLabel?: string;
   error?: boolean;
+  retryQuestion?: string;
 };
 
 type AiAssistantChatProps = {
@@ -26,9 +27,28 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-/** Converts the Server Action response into the chat component's message format. */
+/** Converts the assistant API response into the chat component's message format. */
 function toAssistantMessage(reply: AssistantReply): ChatMessage {
   return { id: createId(), role: "assistant", body: reply.answer, ...reply };
+}
+
+/** Sends the conversation through a stable JSON endpoint instead of a deployment-bound action reference. */
+async function requestAssistantReply(question: string, conversation: ChatMessage[]) {
+  const response = await fetch("/api/landlord/ai-assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      question,
+      conversation: conversation
+        .filter((message) => message.id !== "welcome" && !message.error)
+        .slice(-8)
+        .map((message) => ({ role: message.role, content: message.body })),
+    }),
+  });
+  const reply = await response.json().catch(() => null) as AssistantReply | null;
+
+  if (reply?.answer) return reply;
+  throw new Error(`Assistant endpoint returned ${response.status}.`);
 }
 
 /** Formats an ISO timestamp for the compact time shown below each message. */
@@ -36,7 +56,7 @@ function formatTime(value: string) {
   return new Intl.DateTimeFormat("en-PH", { hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
-/** Renders the interactive chat UI that sends authorized questions to the AI Server Action. */
+/** Renders the interactive chat UI that sends authorized questions to the assistant API. */
 export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: AiAssistantChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -50,6 +70,7 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
   const [suggestionsOpen, setSuggestionsOpen] = useState(true);
   const [pending, startTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const followUpPrompts = ["Explain that more simply.", "What should I do first?", "Draft a professional tenant message."];
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,21 +80,23 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
   function submitQuestion(value: string) {
     const trimmed = value.trim();
     if (!trimmed || pending) return;
-    const recentUserQuestions = messages.filter((message) => message.role === "user").slice(-3).map((message) => message.body);
+    const conversation = messages;
 
     setMessages((current) => [...current, { id: createId(), role: "user", body: trimmed, generatedAt: new Date().toISOString() }]);
     setQuestion("");
     startTransition(async () => {
       try {
-        const reply = await askLandlordAssistant(trimmed, recentUserQuestions);
+        const reply = await requestAssistantReply(trimmed, conversation);
         setMessages((current) => [...current, toAssistantMessage(reply)]);
-      } catch {
+      } catch (error) {
+        console.error("RentSpace Assistant chat request failed:", error);
         setMessages((current) => [...current, {
           id: createId(),
           role: "assistant",
-          body: "I couldn’t complete that request. Check your connection and try again.",
+          body: "I couldn’t reach the RentSpace Assistant service. Your message is still here—use Retry after checking your connection or refreshing the page.",
           generatedAt: new Date().toISOString(),
           error: true,
+          retryQuestion: trimmed,
         }]);
       }
     });
@@ -123,6 +146,11 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
                       {message.relatedLabel} →
                     </Link>
                   ) : null}
+                  {message.retryQuestion ? (
+                    <button type="button" disabled={pending} onClick={() => submitQuestion(message.retryQuestion ?? "")} className="mt-3 inline-flex rounded-[11px] bg-[#fbe9e5] px-3 py-2 text-xs font-semibold text-[#8c3f2d] transition hover:bg-[#f7d8d0] disabled:opacity-50">
+                      Retry message
+                    </button>
+                  ) : null}
                   <p className={`mt-1.5 text-[10px] ${outgoing ? "text-white/70" : "text-[#415a77]"}`}>{formatTime(message.generatedAt)}</p>
                 </div>
               </article>
@@ -141,6 +169,15 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
         </div>
 
         <form onSubmit={handleSubmit} className="border-t border-[var(--color-dormmate-border)] p-3 sm:p-4">
+          {messages.some((message) => message.role === "assistant" && message.id !== "welcome" && !message.error) ? (
+            <div className="mb-3 flex gap-2 overflow-x-auto pb-1" aria-label="Conversation follow-up suggestions">
+              {followUpPrompts.map((prompt) => (
+                <button key={prompt} type="button" disabled={pending} onClick={() => submitQuestion(prompt)} className="whitespace-nowrap rounded-full border border-[#cbded9] bg-[#edf4f2] px-3 py-1.5 text-xs font-semibold text-[#294d4b] transition hover:border-[#315a57] hover:bg-[#e2ece9] disabled:opacity-50">
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div className="mb-3 rounded-[14px] bg-[#f5f6f4] p-3">
             <button type="button" aria-expanded={suggestionsOpen} aria-controls="ai-suggested-questions" onClick={() => setSuggestionsOpen((current) => !current)} className="flex w-full items-center justify-between gap-3 text-left text-xs font-semibold text-[var(--color-dormmate-primary)]">
               <span>{suggestionsOpen ? "Hide suggested questions" : "Show suggested questions"}</span>
@@ -148,7 +185,7 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
             </button>
             {suggestionsOpen ? (
               <div id="ai-suggested-questions" className="mt-2">
-                <p className="text-xs text-[var(--color-dormmate-muted)]">Select a question to send it instantly, or type your own message below.</p>
+                <p className="text-xs text-[var(--color-dormmate-muted)]">Select a question to send it instantly, then ask follow-ups naturally.</p>
                 <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
                   {prompts.map((prompt) => (
                     <button key={prompt} type="button" disabled={pending} onClick={() => submitQuestion(prompt)} className="min-w-[220px] rounded-[12px] border border-[var(--color-dormmate-border)] bg-white px-3 py-2 text-left text-xs font-medium leading-5 text-[#1b263b] transition hover:border-[var(--color-dormmate-primary)] hover:bg-[var(--color-dormmate-green-soft)] disabled:opacity-60">

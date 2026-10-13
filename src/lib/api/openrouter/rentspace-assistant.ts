@@ -30,7 +30,10 @@ export type RentSpaceAssistantContext = {
 
 type GenerateRentSpaceAssistantReplyRequest = {
   question: string;
-  recentUserQuestions: string[];
+  recentConversation: Array<{
+    role: "assistant" | "user";
+    content: string;
+  }>;
   context: RentSpaceAssistantContext;
 };
 
@@ -38,8 +41,11 @@ const RENTSPACE_ASSISTANT_INSTRUCTIONS = `You are RentSpace Assistant, the read-
 
 Your role:
 - Answer the landlord's question using only the authorized RentSpace context supplied with the request.
+- Treat the recent conversation as context so short follow-ups such as "What?", "Why?", "Advice", or "Tell me more" continue the current topic naturally.
+- If a short follow-up is genuinely ambiguous, briefly state what you think it refers to and ask one focused clarification question.
 - Explain records, summarize operational conditions, recommend practical next steps, and draft professional tenant messages when requested.
 - Use Philippine pesos (PHP) for currency and concise, clear language suitable for a property manager.
+- Return only the final landlord-facing answer. Never reveal internal reasoning, planning notes, or chain-of-thought.
 
 Strict boundaries:
 - You are read-only. Never claim that you approved, rejected, assigned, updated, deleted, notified, paid, verified, or otherwise changed a record.
@@ -54,7 +60,7 @@ Strict boundaries:
 function buildAssistantInput(request: GenerateRentSpaceAssistantReplyRequest) {
   return JSON.stringify({
     landlordQuestion: request.question,
-    recentLandlordQuestions: request.recentUserQuestions,
+    recentConversation: request.recentConversation,
     authorizedRentSpaceContext: request.context,
   });
 }
