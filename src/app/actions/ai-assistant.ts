@@ -4,6 +4,9 @@ import {
   generateRentSpaceAssistantReply,
   OpenAIConfigurationError,
   OpenAIRequestError,
+  OpenRouterConfigurationError,
+  OpenRouterRequestError,
+  type RentSpaceAssistantProvider,
   type RentSpaceAssistantContext,
 } from "@/lib/api/openai/rentspace-assistant";
 import { requireFeatureAccess } from "@/lib/features/access";
@@ -21,6 +24,7 @@ export type AssistantReply = {
   relatedLabel?: string;
   generatedAt: string;
   error?: boolean;
+  provider?: RentSpaceAssistantProvider;
 };
 
 /** Selects the most useful RentSpace page to show beside an AI response. */
@@ -124,7 +128,7 @@ function createAssistantContext(
   };
 }
 
-/** Authorizes a landlord, loads permitted data, and requests a read-only answer from OpenAI. */
+/** Authorizes a landlord, loads permitted data, and requests a read-only AI answer. */
 export async function askLandlordAssistant(rawQuestion: string, recentUserQuestions: string[] = []): Promise<AssistantReply> {
   const { profile } = await requireFeatureAccess("ai_assistant");
   const question = rawQuestion.trim();
@@ -136,15 +140,35 @@ export async function askLandlordAssistant(rawQuestion: string, recentUserQuesti
   try {
     const records = await loadAuthorizedLandlordRecords();
     const context = createAssistantContext(records);
-    const answer = await generateRentSpaceAssistantReply({
+    const result = await generateRentSpaceAssistantReply({
       question,
       recentUserQuestions: recentUserQuestions.slice(-3),
       context,
       safetyIdentifier: profile.id,
     });
 
-    return { answer, ...getRelatedPage(question), generatedAt };
+    return { answer: result.answer, provider: result.provider, ...getRelatedPage(question), generatedAt };
   } catch (error) {
+    if (error instanceof OpenRouterConfigurationError) {
+      console.error("OpenRouter fallback is not configured for free-only use.");
+      return {
+        answer: "RentSpace Assistant is not configured yet. Please contact the system administrator.",
+        generatedAt,
+        error: true,
+      };
+    }
+
+    if (error instanceof OpenRouterRequestError) {
+      console.error("OpenRouter assistant fallback failed:", { status: error.status, code: error.code, requestId: error.requestId });
+      return {
+        answer: error.status === 429
+          ? "RentSpace Assistant has reached its free AI usage limit. Please try again later."
+          : "RentSpace Assistant could not connect to either AI service right now. Please try again shortly.",
+        generatedAt,
+        error: true,
+      };
+    }
+
     if (error instanceof OpenAIConfigurationError) {
       return {
         answer: "RentSpace Assistant is not configured yet. Please contact the system administrator.",

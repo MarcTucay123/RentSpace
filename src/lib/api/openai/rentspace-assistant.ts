@@ -5,8 +5,15 @@ import {
   OpenAIConfigurationError,
   OpenAIRequestError,
 } from "./client";
+import {
+  createOpenRouterTextResponse,
+  OpenRouterConfigurationError,
+  OpenRouterRequestError,
+} from "../openrouter/client";
 
-export { OpenAIConfigurationError, OpenAIRequestError };
+export { OpenAIConfigurationError, OpenAIRequestError, OpenRouterConfigurationError, OpenRouterRequestError };
+
+export type RentSpaceAssistantProvider = "openai" | "openrouter";
 
 export type RentSpaceAssistantContext = {
   generatedAt: string;
@@ -60,12 +67,45 @@ function buildAssistantInput(request: GenerateRentSpaceAssistantReplyRequest) {
   });
 }
 
-/** Sends an authorized RentSpace question and operational snapshot to OpenAI. */
+/** Returns whether an OpenAI failure should be retried through the fallback provider. */
+function shouldUseOpenRouter(error: unknown) {
+  if (error instanceof OpenAIConfigurationError) return true;
+  if (!(error instanceof OpenAIRequestError)) return false;
+
+  return [408, 409, 429, 500, 502, 503, 504].includes(error.status)
+    || ["insufficient_quota", "credit_balance_exhausted"].includes(error.code ?? "");
+}
+
+/** Sends an authorized RentSpace question to OpenAI, then free-only OpenRouter when needed. */
 export async function generateRentSpaceAssistantReply(request: GenerateRentSpaceAssistantReplyRequest) {
-  return createOpenAITextResponse({
-    instructions: RENTSPACE_ASSISTANT_INSTRUCTIONS,
-    input: buildAssistantInput(request),
-    safetyIdentifier: request.safetyIdentifier,
-    maxOutputTokens: 900,
-  });
+  const input = buildAssistantInput(request);
+
+  try {
+    const answer = await createOpenAITextResponse({
+      instructions: RENTSPACE_ASSISTANT_INSTRUCTIONS,
+      input,
+      safetyIdentifier: request.safetyIdentifier,
+      maxOutputTokens: 900,
+    });
+    return { answer, provider: "openai" as const };
+  } catch (error) {
+    if (!shouldUseOpenRouter(error)) throw error;
+
+    if (error instanceof OpenAIRequestError) {
+      console.warn("OpenAI unavailable; trying OpenRouter fallback:", {
+        status: error.status,
+        code: error.code,
+        requestId: error.requestId,
+      });
+    } else {
+      console.warn("OpenAI is not configured; trying OpenRouter fallback.");
+    }
+
+    const answer = await createOpenRouterTextResponse({
+      instructions: RENTSPACE_ASSISTANT_INSTRUCTIONS,
+      input,
+      maxOutputTokens: 900,
+    });
+    return { answer, provider: "openrouter" as const };
+  }
 }
