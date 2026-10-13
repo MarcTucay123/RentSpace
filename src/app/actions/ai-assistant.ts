@@ -154,7 +154,32 @@ export async function askLandlordAssistant(rawQuestion: string, recentUserQuesti
     }
 
     if (error instanceof OpenAIRequestError) {
-      console.error("OpenAI assistant request failed:", { status: error.status, requestId: error.requestId });
+      console.error("OpenAI assistant request failed:", { status: error.status, code: error.code, requestId: error.requestId });
+
+      if (["insufficient_quota", "credit_balance_exhausted"].includes(error.code ?? "")) {
+        return {
+          answer: "RentSpace Assistant is temporarily unavailable because its AI service credits have been exhausted. Please contact the system administrator to restore API billing, then try again.",
+          generatedAt,
+          error: true,
+        };
+      }
+
+      if (error.status === 401 || error.status === 403) {
+        return {
+          answer: "RentSpace Assistant cannot connect because its AI service credentials are invalid or unauthorized. Please contact the system administrator.",
+          generatedAt,
+          error: true,
+        };
+      }
+
+      if (error.status === 429) {
+        return {
+          answer: "RentSpace Assistant is receiving too many requests right now. Please wait a moment and try again.",
+          generatedAt,
+          error: true,
+        };
+      }
+
       return {
         answer: "RentSpace Assistant could not complete the request right now. Please try again shortly or ask a more focused RentSpace question.",
         generatedAt,

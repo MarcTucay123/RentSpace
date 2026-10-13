@@ -19,6 +19,8 @@ type OpenAIResponseBody = {
   }>;
   error?: {
     message?: string;
+    code?: string | null;
+    type?: string;
   };
 };
 
@@ -34,13 +36,15 @@ export class OpenAIConfigurationError extends Error {}
 export class OpenAIRequestError extends Error {
   status: number;
   requestId: string | null;
+  code: string | null;
 
   /** Creates an error containing only safe OpenAI response metadata for server logs. */
-  constructor(message: string, status: number, requestId: string | null) {
+  constructor(message: string, status: number, requestId: string | null, code: string | null = null) {
     super(message);
     this.name = "OpenAIRequestError";
     this.status = status;
     this.requestId = requestId;
+    this.code = code;
   }
 }
 
@@ -95,7 +99,12 @@ export async function createOpenAITextResponse(request: CreateOpenAITextRequest)
     const requestId = response.headers.get("x-request-id");
 
     if (!response.ok) {
-      throw new OpenAIRequestError(body.error?.message ?? "OpenAI returned an unsuccessful response.", response.status, requestId);
+      throw new OpenAIRequestError(
+        body.error?.message ?? "OpenAI returned an unsuccessful response.",
+        response.status,
+        requestId,
+        body.error?.code ?? body.error?.type ?? null,
+      );
     }
 
     const text = extractResponseText(body);

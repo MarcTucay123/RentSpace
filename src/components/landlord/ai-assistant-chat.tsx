@@ -103,7 +103,10 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden rounded-full bg-[#f0f1ee] px-2.5 py-1 text-[10px] font-semibold text-[#1b263b] sm:inline-flex">Online</span>
+            <span className="hidden items-center gap-1.5 rounded-full bg-[#dcfce7] px-2.5 py-1 text-[10px] font-semibold text-[#166534] sm:inline-flex">
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
+              Active
+            </span>
             <button type="button" onClick={clearChat} disabled={messages.length === 1 || pending} className="text-xs font-semibold text-[var(--color-dormmate-primary)] hover:underline disabled:cursor-not-allowed disabled:opacity-40">Clear chat</button>
           </div>
         </header>
