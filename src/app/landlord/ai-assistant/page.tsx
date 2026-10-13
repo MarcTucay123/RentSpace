@@ -5,6 +5,7 @@ export const metadata = {
   title: "AI Assistant | RentSpace",
 };
 
+/** Renders the OpenAI-powered, read-only operations assistant for an authorized Landlord. */
 export default async function LandlordAiAssistantPage() {
   const { profile } = await requireLandlordAccess();
 
@@ -23,7 +24,7 @@ export default async function LandlordAiAssistantPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-dormmate-primary)]">AI Assistant</p>
         <h1 className="mt-2 text-[1.55rem] font-semibold tracking-tight sm:text-[1.8rem]">Your RentSpace operations adviser</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--color-dormmate-muted)]">
-          Ask about authorized Tenant, Rent, Payment, Maintenance, Message, and Notification records. The adviser can recommend next steps and prepare Tenant message drafts, while keeping every action and conversation inside RentSpace. It never changes records or sends messages without your review.
+          Ask OpenAI about your authorized Tenant, Rent, Payment, Maintenance, Message, and Notification records. The adviser can recommend next steps and prepare Tenant message drafts. It remains read-only and never changes records or sends messages without your review.
         </p>
       </section>
 

@@ -21,24 +21,28 @@ type AiAssistantChatProps = {
   initialGeneratedAt: string;
 };
 
+/** Creates a local identifier for a chat message rendered in the browser. */
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+/** Converts the Server Action response into the chat component's message format. */
 function toAssistantMessage(reply: AssistantReply): ChatMessage {
   return { id: createId(), role: "assistant", body: reply.answer, ...reply };
 }
 
+/** Formats an ISO timestamp for the compact time shown below each message. */
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("en-PH", { hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
+/** Renders the interactive chat UI that sends authorized questions to the OpenAI Server Action. */
 export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: AiAssistantChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       role: "assistant",
-      body: `Hi ${landlordName}. I can review your RentSpace records, recommend operational next steps, prioritize follow-ups, and draft messages for Tenant communication inside the system. I remain read-only and system-scoped. What would you like help with?`,
+      body: `Hi ${landlordName}. I’m powered by OpenAI and can review your authorized RentSpace records, recommend operational next steps, prioritize follow-ups, and draft Tenant messages. I remain read-only and system-scoped. What would you like help with?`,
       generatedAt: initialGeneratedAt,
     },
   ]);
@@ -51,6 +55,7 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, pending]);
 
+  /** Adds a Landlord question to the chat and invokes the server-side OpenAI workflow. */
   function submitQuestion(value: string) {
     const trimmed = value.trim();
     if (!trimmed || pending) return;
@@ -74,11 +79,13 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
     });
   }
 
+  /** Prevents browser form navigation and sends the current question. */
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     submitQuestion(question);
   }
 
+  /** Clears the local conversation while preserving the welcome message. */
   function clearChat() {
     setMessages((current) => current.slice(0, 1));
     setQuestion("");
@@ -122,7 +129,7 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
             <div className="flex justify-start">
               <div className="rounded-[18px] rounded-bl-md border border-[var(--color-dormmate-border)] bg-white px-4 py-3 text-sm text-[var(--color-dormmate-muted)]">
                 <span className="inline-flex items-center gap-1" aria-label="Assistant is analyzing your data">
-                  Analyzing your data<span className="animate-pulse">…</span>
+                  Asking OpenAI to analyze your data<span className="animate-pulse">…</span>
                 </span>
               </div>
             </div>
