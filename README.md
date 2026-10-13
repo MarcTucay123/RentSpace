@@ -12,7 +12,7 @@ RentSpace is a role-based dormitory and apartment management application built f
 - GCash proof and manual cash-payment workflows
 - Maintenance requests with photo attachments
 - Direct messaging and notifications
-- OpenAI-powered, read-only landlord operations assistant
+- OpenRouter-powered, read-only landlord operations assistant
 - Profile photos and account administration
 - Supabase Row Level Security policies and database constraints
 
@@ -23,7 +23,7 @@ RentSpace is a role-based dormitory and apartment management application built f
 - TypeScript
 - Tailwind CSS 4
 - Supabase Auth, Postgres, Storage, and Realtime
-- OpenAI Responses API
+- OpenRouter Chat Completions API
 
 ## Local setup
 
@@ -42,29 +42,22 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 SUPABASE_SECRET_KEY=your_server_only_secret_key
-OPENAI_API_KEY=your_server_only_openai_api_key
-OPENAI_MODEL=gpt-5-mini
 OPENROUTER_API_KEY=your_server_only_openrouter_api_key
 OPENROUTER_MODEL=openrouter/free
 ```
 
 `SUPABASE_SECRET_KEY` is used only by privileged server-side account-management and maintenance scripts, including creating pending Admin registration requests. The legacy `SUPABASE_SERVICE_ROLE_KEY` name is also supported. Never expose this secret in browser code, commit it to Git, or prefix it with `NEXT_PUBLIC_`.
 
-`OPENAI_API_KEY` enables the Landlord AI Assistant and is read only by server-side code in `src/lib/api/openai`. `OPENAI_MODEL` is optional and defaults to `gpt-5-mini`. Never prefix the OpenAI key with `NEXT_PUBLIC_` or commit a real key to Git. The assistant sends a limited copy of the signed-in Landlord's authorized operational records to OpenAI so it can answer RentSpace questions; it does not receive tools that can modify records.
-
-`OPENROUTER_API_KEY` enables the automatic fallback when OpenAI is unavailable or out of credits. `OPENROUTER_MODEL` defaults to `openrouter/free`; the server rejects any configured model that is not `openrouter/free` or suffixed with `:free`, preventing accidental paid-model usage. Keep the key server-only and configure both variables in each Vercel environment that should use the fallback.
+`OPENROUTER_API_KEY` enables the Landlord AI Assistant. `OPENROUTER_MODEL` defaults to `openrouter/free`; the server rejects any configured model that is not `openrouter/free` or suffixed with `:free`, preventing accidental paid-model usage. Keep the key server-only and configure both variables in each Vercel environment. The assistant sends a limited copy of the signed-in Landlord's authorized operational records to OpenRouter and is not given tools that can modify records.
 
 ### AI API structure
 
 The external LLM integration is intentionally isolated so it is easy to review:
 
 ```text
-src/lib/api/openai/
-├── README.md                # Instructor-facing integration guide
-├── client.ts                # Direct OpenAI Responses API request
-└── rentspace-assistant.ts   # RentSpace prompt and context contract
 src/lib/api/openrouter/
-└── client.ts                # Free-only OpenRouter fallback request
+├── client.ts                # Free-only OpenRouter request
+└── rentspace-assistant.ts   # RentSpace prompt and context contract
 ```
 
 The authenticated entry point is `src/app/actions/ai-assistant.ts`.

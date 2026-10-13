@@ -2,13 +2,10 @@
 
 import {
   generateRentSpaceAssistantReply,
-  OpenAIConfigurationError,
-  OpenAIRequestError,
   OpenRouterConfigurationError,
   OpenRouterRequestError,
-  type RentSpaceAssistantProvider,
   type RentSpaceAssistantContext,
-} from "@/lib/api/openai/rentspace-assistant";
+} from "@/lib/api/openrouter/rentspace-assistant";
 import { requireFeatureAccess } from "@/lib/features/access";
 import {
   getLandlordMaintenanceRequests,
@@ -24,7 +21,6 @@ export type AssistantReply = {
   relatedLabel?: string;
   generatedAt: string;
   error?: boolean;
-  provider?: RentSpaceAssistantProvider;
 };
 
 /** Selects the most useful RentSpace page to show beside an AI response. */
@@ -56,7 +52,7 @@ async function loadAuthorizedLandlordRecords() {
   return { tenants, payments, maintenance, obligations, notifications };
 }
 
-/** Converts RLS-authorized landlord records into the limited context sent to OpenAI. */
+/** Converts RLS-authorized landlord records into the limited context sent to the AI service. */
 function createAssistantContext(
   records: Awaited<ReturnType<typeof loadAuthorizedLandlordRecords>>,
 ): RentSpaceAssistantContext {
@@ -130,7 +126,7 @@ function createAssistantContext(
 
 /** Authorizes a landlord, loads permitted data, and requests a read-only AI answer. */
 export async function askLandlordAssistant(rawQuestion: string, recentUserQuestions: string[] = []): Promise<AssistantReply> {
-  const { profile } = await requireFeatureAccess("ai_assistant");
+  await requireFeatureAccess("ai_assistant");
   const question = rawQuestion.trim();
   const generatedAt = new Date().toISOString();
 
@@ -140,17 +136,16 @@ export async function askLandlordAssistant(rawQuestion: string, recentUserQuesti
   try {
     const records = await loadAuthorizedLandlordRecords();
     const context = createAssistantContext(records);
-    const result = await generateRentSpaceAssistantReply({
+    const answer = await generateRentSpaceAssistantReply({
       question,
       recentUserQuestions: recentUserQuestions.slice(-3),
       context,
-      safetyIdentifier: profile.id,
     });
 
-    return { answer: result.answer, provider: result.provider, ...getRelatedPage(question), generatedAt };
+    return { answer, ...getRelatedPage(question), generatedAt };
   } catch (error) {
     if (error instanceof OpenRouterConfigurationError) {
-      console.error("OpenRouter fallback is not configured for free-only use.");
+      console.error("OpenRouter is not configured for free-only use.");
       return {
         answer: "RentSpace Assistant is not configured yet. Please contact the system administrator.",
         generatedAt,
@@ -159,63 +154,21 @@ export async function askLandlordAssistant(rawQuestion: string, recentUserQuesti
     }
 
     if (error instanceof OpenRouterRequestError) {
-      console.error("OpenRouter assistant fallback failed:", { status: error.status, code: error.code, requestId: error.requestId });
+      console.error("OpenRouter assistant request failed:", { status: error.status, code: error.code, requestId: error.requestId });
       return {
         answer: error.status === 402
           ? "RentSpace Assistant’s OpenRouter key has reached its configured spending limit. Please contact the system administrator."
           : error.status === 429
             ? "RentSpace Assistant has reached its free AI request limit. Please try again later."
             : error.status === 401 || error.status === 403
-              ? "RentSpace Assistant’s fallback credentials are invalid or unauthorized. Please contact the system administrator."
-              : "RentSpace Assistant could not connect to either AI service right now. Please try again shortly.",
+              ? "RentSpace Assistant’s credentials are invalid or unauthorized. Please contact the system administrator."
+              : "RentSpace Assistant could not connect to its AI service right now. Please try again shortly.",
         generatedAt,
         error: true,
       };
     }
 
-    if (error instanceof OpenAIConfigurationError) {
-      return {
-        answer: "RentSpace Assistant is not configured yet. Please contact the system administrator.",
-        generatedAt,
-        error: true,
-      };
-    }
-
-    if (error instanceof OpenAIRequestError) {
-      console.error("OpenAI assistant request failed:", { status: error.status, code: error.code, requestId: error.requestId });
-
-      if (["insufficient_quota", "credit_balance_exhausted"].includes(error.code ?? "")) {
-        return {
-          answer: "RentSpace Assistant is temporarily unavailable because its AI service credits have been exhausted. Please contact the system administrator to restore API billing, then try again.",
-          generatedAt,
-          error: true,
-        };
-      }
-
-      if (error.status === 401 || error.status === 403) {
-        return {
-          answer: "RentSpace Assistant cannot connect because its AI service credentials are invalid or unauthorized. Please contact the system administrator.",
-          generatedAt,
-          error: true,
-        };
-      }
-
-      if (error.status === 429) {
-        return {
-          answer: "RentSpace Assistant is receiving too many requests right now. Please wait a moment and try again.",
-          generatedAt,
-          error: true,
-        };
-      }
-
-      return {
-        answer: "RentSpace Assistant could not complete the request right now. Please try again shortly or ask a more focused RentSpace question.",
-        generatedAt,
-        error: true,
-      };
-    }
-
-    console.error("RentSpace assistant failed before receiving an OpenAI response:", error);
+    console.error("RentSpace assistant failed before receiving an AI response:", error);
     return {
       answer: "I couldn’t load the required RentSpace data right now. Please try again shortly.",
       generatedAt,

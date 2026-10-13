@@ -13,7 +13,6 @@ type ChatMessage = {
   relatedHref?: string;
   relatedLabel?: string;
   error?: boolean;
-  provider?: "openai" | "openrouter";
 };
 
 type AiAssistantChatProps = {
@@ -51,12 +50,6 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
   const [suggestionsOpen, setSuggestionsOpen] = useState(true);
   const [pending, startTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
-  const latestAssistantReply = messages.findLast((message) => message.role === "assistant" && message.id !== "welcome");
-  const assistantStatus = latestAssistantReply?.error
-    ? { label: "Unavailable", tone: "bg-[#fee2e2] text-[#991b1b]", dot: "bg-[#ef4444]" }
-    : latestAssistantReply?.provider === "openrouter"
-      ? { label: "Fallback mode", tone: "bg-[#fef3c7] text-[#92400e]", dot: "bg-[#f59e0b]" }
-      : { label: "Active", tone: "bg-[#dcfce7] text-[#166534]", dot: "bg-[#22c55e]" };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -110,9 +103,9 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className={`hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold sm:inline-flex ${assistantStatus.tone}`}>
-              <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${assistantStatus.dot}`} />
-              {assistantStatus.label}
+            <span className="hidden items-center gap-1.5 rounded-full bg-[#dcfce7] px-2.5 py-1 text-[10px] font-semibold text-[#166534] sm:inline-flex">
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
+              Active
             </span>
             <button type="button" onClick={clearChat} disabled={messages.length === 1 || pending} className="text-xs font-semibold text-[var(--color-dormmate-primary)] hover:underline disabled:cursor-not-allowed disabled:opacity-40">Clear chat</button>
           </div>
