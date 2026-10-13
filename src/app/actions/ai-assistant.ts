@@ -27,6 +27,7 @@ export type AssistantReply = {
 function getRelatedPage(question: string) {
   const normalized = question.toLowerCase();
 
+  if (/analytics|trend|performance|portfolio health|forecast|collection rate|occupancy rate/.test(normalized)) return { relatedHref: "/landlord/ai-rental-analytics", relatedLabel: "View AI Rental Analytics" };
   if (/maintenance|repair|broken|issue/.test(normalized)) return { relatedHref: "/landlord/maintenance", relatedLabel: "View Maintenance" };
   if (/payment|gcash|cash|receipt|proof|collection/.test(normalized)) return { relatedHref: "/landlord/payments", relatedLabel: "View Payments" };
   if (/rent|overdue|balance|obligation|due date/.test(normalized)) return { relatedHref: "/landlord/rent-monitoring", relatedLabel: "View Rent Monitoring" };
@@ -34,7 +35,7 @@ function getRelatedPage(question: string) {
   if (/notification|alert|unread/.test(normalized)) return { relatedHref: "/landlord/notifications", relatedLabel: "View Notifications" };
   if (/unit|room|bed|apartment|occupancy|available space/.test(normalized)) return { relatedHref: "/landlord/units", relatedLabel: "View Units" };
   if (/tenant|assignment|move in|move-in|move out|move-out/.test(normalized)) return { relatedHref: "/landlord/tenants", relatedLabel: "View Tenants" };
-  if (/report|monthly summary|collection rate/.test(normalized)) return { relatedHref: "/landlord/reports", relatedLabel: "View Reports" };
+  if (/report|monthly summary/.test(normalized)) return { relatedHref: "/landlord/reports", relatedLabel: "View Reports" };
 
   return { relatedHref: "/landlord/dashboard", relatedLabel: "Open Dashboard" };
 }

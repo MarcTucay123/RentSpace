@@ -12,6 +12,7 @@ RentSpace is a role-based dormitory and apartment management application built f
 - GCash proof and manual cash-payment workflows
 - Maintenance requests with photo attachments
 - Direct messaging and notifications
+- AI Rental Analytics with deterministic KPIs, six-month trends, prioritized risks, and aggregate-only AI insights
 - OpenRouter-powered, read-only landlord operations assistant
 - Profile photos and account administration
 - Supabase Row Level Security policies and database constraints
@@ -48,7 +49,7 @@ OPENROUTER_MODEL=openrouter/free
 
 `SUPABASE_SECRET_KEY` is used only by privileged server-side account-management and maintenance scripts, including creating pending Admin registration requests. The legacy `SUPABASE_SERVICE_ROLE_KEY` name is also supported. Never expose this secret in browser code, commit it to Git, or prefix it with `NEXT_PUBLIC_`.
 
-`OPENROUTER_API_KEY` enables the Landlord AI Assistant. `OPENROUTER_MODEL` defaults to `openrouter/free`; the server rejects any configured model that is not `openrouter/free` or suffixed with `:free`, preventing accidental paid-model usage. Keep the key server-only and configure both variables in each Vercel environment. The assistant sends a limited copy of the signed-in Landlord's authorized operational records to OpenRouter and is not given tools that can modify records.
+`OPENROUTER_API_KEY` enables the Landlord AI Assistant and AI Rental Analytics insights. `OPENROUTER_MODEL` defaults to `openrouter/free`; the server rejects any configured model that is not `openrouter/free` or suffixed with `:free`, preventing accidental paid-model usage. Keep the key server-only and configure both variables in each Vercel environment. The assistant sends a limited copy of the signed-in Landlord's authorized operational records to OpenRouter and is not given tools that can modify records. AI Rental Analytics sends only calculated aggregate metrics and trends, not tenant names or maintenance descriptions.
 
 ### AI API structure
 
@@ -57,6 +58,7 @@ The external LLM integration is intentionally isolated so it is easy to review:
 ```text
 src/lib/api/openrouter/
 ├── client.ts                # Free-only OpenRouter request
+├── rental-analytics.ts      # Aggregate-only analytics interpretation
 └── rentspace-assistant.ts   # RentSpace prompt and context contract
 ```
 
