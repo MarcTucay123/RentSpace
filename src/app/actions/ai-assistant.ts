@@ -161,9 +161,13 @@ export async function askLandlordAssistant(rawQuestion: string, recentUserQuesti
     if (error instanceof OpenRouterRequestError) {
       console.error("OpenRouter assistant fallback failed:", { status: error.status, code: error.code, requestId: error.requestId });
       return {
-        answer: error.status === 429
-          ? "RentSpace Assistant has reached its free AI usage limit. Please try again later."
-          : "RentSpace Assistant could not connect to either AI service right now. Please try again shortly.",
+        answer: error.status === 402
+          ? "RentSpace Assistant’s OpenRouter key has reached its configured spending limit. Please contact the system administrator."
+          : error.status === 429
+            ? "RentSpace Assistant has reached its free AI request limit. Please try again later."
+            : error.status === 401 || error.status === 403
+              ? "RentSpace Assistant’s fallback credentials are invalid or unauthorized. Please contact the system administrator."
+              : "RentSpace Assistant could not connect to either AI service right now. Please try again shortly.",
         generatedAt,
         error: true,
       };
