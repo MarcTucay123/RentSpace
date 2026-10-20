@@ -100,6 +100,15 @@ export function AppShell({ profile, profileAssignmentLabel, title, subtitle, nav
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const totalAttentionCount = navItems.reduce((total, item) => total + (item.badgeCount ?? 0), 0);
+  const notificationItem = navItems.find((item) => item.label === "Notifications");
+  const profileItem = navItems.find((item) => item.label === "Profile Settings");
+  const displayName = `${profile.first_name} ${profile.last_name}`.trim();
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "?";
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -148,16 +157,6 @@ export function AppShell({ profile, profileAssignmentLabel, title, subtitle, nav
     <div className="portal-page min-h-screen px-3 py-3 text-[var(--color-dormmate-text)] sm:px-4 lg:px-[1cm]">
       <PortalAutoRefresh profileId={profile.id} />
       <header className="portal-topbar mb-4 flex min-h-[68px] items-center gap-3 rounded-[20px] px-3 py-3 sm:min-h-[74px] sm:px-4">
-        <div className="shrink-0 rounded-[12px] border border-[#d8e5e2] bg-gradient-to-br from-white to-[#eef5f3] px-2 py-1.5 shadow-sm" aria-label="RentSpace product identity">
-          <BrandLogo className="h-auto w-[112px] sm:w-[150px]" priority />
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <strong className="block truncate text-[0.95rem] font-bold text-[#0d1b2a] sm:text-[1.2rem]">{title}</strong>
-          <small className="hidden truncate text-sm leading-5 text-[#415a77] sm:block">{subtitle}</small>
-        </div>
-
-        <div className="hidden rounded-full bg-[#f6e6a8] px-4 py-2 text-xs font-semibold capitalize text-[#755611] sm:block sm:text-sm">{profile.role}</div>
         <button
           type="button"
           aria-label={totalAttentionCount > 0 ? `Open navigation menu, ${totalAttentionCount} pending items` : "Open navigation menu"}
@@ -178,6 +177,66 @@ export function AppShell({ profile, profileAssignmentLabel, title, subtitle, nav
             </span>
           ) : null}
         </button>
+
+        <div className="shrink-0 rounded-[12px] border border-[#d8e5e2] bg-gradient-to-br from-white to-[#eef5f3] px-2 py-1.5 shadow-sm" aria-label="RentSpace product identity">
+          <BrandLogo className="h-auto w-[96px] sm:w-[150px]" priority />
+        </div>
+
+        <div className="hidden min-w-0 flex-1 md:block">
+          <strong className="block truncate text-[1.2rem] font-bold text-[#0d1b2a]">{title}</strong>
+          <small className="block truncate text-sm leading-5 text-[#415a77]">{subtitle}</small>
+        </div>
+
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {notificationItem ? (
+            <Link
+              href={notificationItem.href}
+              aria-label={notificationItem.badgeCount ? `Notifications, ${notificationItem.badgeCount} unread` : "Notifications"}
+              title="Notifications"
+              className={`relative grid h-10 w-10 place-items-center rounded-full border transition sm:h-11 sm:w-11 ${
+                isActivePath(pathname, notificationItem.href)
+                  ? "border-[#315a57] bg-[#294d4b] text-white"
+                  : "border-[#d8e5e2] bg-white text-[#294d4b] hover:border-[#315a57] hover:bg-[#edf4f2]"
+              }`}
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-none" stroke="currentColor" strokeWidth="1.8">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 21h4" />
+              </svg>
+              {notificationItem.badgeCount && notificationItem.badgeCount > 0 ? (
+                <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#d6a91f] px-1 text-[9px] font-bold leading-none text-[#223b3a] ring-2 ring-white">
+                  {notificationItem.badgeCount > 99 ? "99+" : notificationItem.badgeCount}
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
+
+          <Link
+            href={profileItem?.href ?? "/profile"}
+            aria-label="Open profile settings"
+            title="Profile settings"
+            className={`flex h-10 items-center gap-2 rounded-full border p-1 pr-1 transition sm:h-11 sm:pr-3 ${
+              isActivePath(pathname, profileItem?.href ?? "/profile")
+                ? "border-[#315a57] bg-[#edf4f2]"
+                : "border-[#d8e5e2] bg-white hover:border-[#315a57] hover:bg-[#f4f8f7]"
+            }`}
+          >
+            <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-[#dce9e6] text-[10px] font-bold text-[#294d4b] sm:h-9 sm:w-9 sm:text-xs">
+              {profile.profile_photo_url ? (
+                // Profile photo URLs are generated at runtime by the configured Supabase project.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.profile_photo_url} alt="" className="h-full w-full object-cover" />
+              ) : initials}
+            </span>
+            <span className="hidden min-w-0 sm:block">
+              <span className="block max-w-32 truncate text-xs font-semibold text-[#0d1b2a]">{displayName}</span>
+              <span className="block text-[10px] font-medium capitalize text-[#60736f]">{profile.role}</span>
+            </span>
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="hidden h-3.5 w-3.5 text-[#60736f] sm:block" fill="currentColor">
+              <path d="m5.5 7.5 4.5 4.5 4.5-4.5" />
+            </svg>
+          </Link>
+        </div>
       </header>
 
       <div className="grid w-full gap-4 lg:grid-cols-[232px_minmax(0,1fr)]">
