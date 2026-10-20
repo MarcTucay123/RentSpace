@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
+import { FloatingAiAssistant } from "@/components/landlord/floating-ai-assistant";
 import { requireLandlordAccess } from "@/lib/auth/utils";
 import { getLandlordNavigationCounts } from "@/lib/navigation/counts";
 import { getEnabledFeatureKeys } from "@/lib/features/access";
@@ -28,11 +29,11 @@ export default async function LandlordLayout({ children }: { children: ReactNode
         enabledFeatures.has("messages") ? { href: "/landlord/messages", label: "Messages", badgeCount: counts.unreadMessages } : null,
         enabledFeatures.has("notifications") ? { href: "/landlord/notifications", label: "Notifications", badgeCount: counts.unreadNotifications } : null,
         enabledFeatures.has("reports") ? { href: "/landlord/reports", label: "Reports" } : null,
-        enabledFeatures.has("ai_assistant") ? { href: "/landlord/ai-assistant", label: "AI Assistant" } : null,
         { href: "/profile", label: "Profile Settings" },
       ].filter((item): item is NonNullable<typeof item> => item !== null)}
     >
       {children}
+      {enabledFeatures.has("ai_assistant") ? <FloatingAiAssistant landlordName={profile.first_name} /> : null}
     </AppShell>
   );
 }

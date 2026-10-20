@@ -16,6 +16,23 @@ type NavItem = {
   badgeCount?: number;
 };
 
+function NavigationIcon({ href }: { href: string }) {
+  const className = "h-[18px] w-[18px] shrink-0 fill-none";
+  const common = { stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+
+  if (href.includes("dashboard")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-13h6V4h-6v3Z" /></svg>;
+  if (href.includes("approvals") || href.includes("landlords")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><path d="M9 11 11 13 15.5 8.5" /><path d="M6 3h12v18H6z" /><path d="M9 17h6" /></svg>;
+  if (href.includes("units") || href.includes("my-rental")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><path d="M3 21h18M5 21V5l7-2 7 2v16" /><path d="M9 9h.01M9 13h.01M15 9h.01M15 13h.01M10 21v-4h4v4" /></svg>;
+  if (href.includes("tenants") || href.endsWith("/users")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
+  if (href.includes("rent-monitoring")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><path d="M3 3v18h18" /><path d="m7 16 4-5 3 2 5-7" /></svg>;
+  if (href.includes("payments")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20M6 15h4" /></svg>;
+  if (href.includes("maintenance")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><path d="M14.7 6.3a4 4 0 0 0-5-5L12 3.6 9.6 6 7.3 3.7a4 4 0 0 0 5 5L20 16.4a2.1 2.1 0 0 1-3 3l-7.7-7.7" /><path d="m5 13-3 3 6 6 3-3" /></svg>;
+  if (href.includes("messages")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z" /><path d="M8 9h8M8 13h5" /></svg>;
+  if (href.includes("reports")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><path d="M6 2h9l4 4v16H6z" /><path d="M14 2v5h5M9 12h6M9 16h6" /></svg>;
+  if (href.includes("user-control")) return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></svg>;
+  return <svg aria-hidden="true" viewBox="0 0 24 24" className={className} {...common}><circle cx="12" cy="12" r="9" /><path d="M12 8v4l3 2" /></svg>;
+}
+
 type AppShellProps = {
   profile: Profile;
   title: string;
@@ -59,7 +76,10 @@ function NavigationLinks({
           }`}
         >
           <span className="flex min-w-0 items-center justify-between gap-3">
-            <span className="truncate">{item.label}</span>
+            <span className="flex min-w-0 items-center gap-3">
+              <NavigationIcon href={item.href} />
+              <span className="truncate">{item.label}</span>
+            </span>
             {item.badgeCount && item.badgeCount > 0 ? (
               <span
                 className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-[#d6a91f] px-1.5 text-[10px] font-bold leading-none text-[#223b3a] shadow-sm"
