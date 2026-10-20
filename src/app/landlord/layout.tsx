@@ -27,7 +27,7 @@ export default async function LandlordLayout({ children }: { children: ReactNode
         enabledFeatures.has("maintenance") ? { href: "/landlord/maintenance", label: "Maintenance" } : null,
         enabledFeatures.has("messages") ? { href: "/landlord/messages", label: "Messages", badgeCount: counts.unreadMessages } : null,
         enabledFeatures.has("notifications") ? { href: "/landlord/notifications", label: "Notifications", badgeCount: counts.unreadNotifications } : null,
-        enabledFeatures.has("ai_assistant") ? { href: "/landlord/ai-rental-analytics", label: "AI Rental Analytics Reports" } : null,
+        enabledFeatures.has("reports") ? { href: "/landlord/reports", label: "Reports" } : null,
         enabledFeatures.has("ai_assistant") ? { href: "/landlord/ai-assistant", label: "AI Assistant" } : null,
         { href: "/profile", label: "Profile Settings" },
       ].filter((item): item is NonNullable<typeof item> => item !== null)}

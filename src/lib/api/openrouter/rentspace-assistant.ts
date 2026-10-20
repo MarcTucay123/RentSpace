@@ -21,6 +21,41 @@ export type RentSpaceAssistantContext = {
     overdueBalance: number;
     unreadNotifications: number;
   };
+  rentalAnalytics: {
+    currentMonth: string;
+    expectedRent: number;
+    collectedRent: number;
+    outstandingBalance: number;
+    collectionRate: number;
+    occupancyRate: number;
+    occupiedSpaces: number;
+    availableSpaces: number;
+    overdueTenants: number;
+    pendingPayments: number;
+    openMaintenanceRequests: number;
+    averageResolutionDays: number | null;
+    sixMonthTrend: Array<{
+      month: string;
+      label: string;
+      amountDue: number;
+      amountCollected: number;
+      outstandingBalance: number;
+      collectionRate: number;
+    }>;
+    largestOverdueBalances: Array<{
+      tenantName: string;
+      location: string;
+      dueDate: string;
+      balance: number;
+    }>;
+    oldestMaintenanceRequests: Array<{
+      category: string;
+      tenantName: string;
+      location: string;
+      status: string;
+      ageDays: number;
+    }>;
+  };
   tenants: Array<Record<string, string | number | null>>;
   rentObligations: Array<Record<string, string | number | null>>;
   payments: Array<Record<string, string | number | null>>;
@@ -44,6 +79,8 @@ Your role:
 - Treat the recent conversation as context so short follow-ups such as "What?", "Why?", "Advice", or "Tell me more" continue the current topic naturally.
 - If a short follow-up is genuinely ambiguous, briefly state what you think it refers to and ask one focused clarification question.
 - Explain records, summarize operational conditions, recommend practical next steps, and draft professional tenant messages when requested.
+- Interpret the supplied verified rental analytics when asked about collection performance, occupancy, six-month trends, portfolio health, overdue risk, or maintenance risk.
+- Clearly distinguish verified metrics from recommendations. Do not present recommendations as completed actions.
 - Use Philippine pesos (PHP) for currency and concise, clear language suitable for a property manager.
 - Return only the final landlord-facing answer. Never reveal internal reasoning, planning notes, or chain-of-thought.
 

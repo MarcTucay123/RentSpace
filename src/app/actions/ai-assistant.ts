@@ -14,6 +14,7 @@ import {
   getLandlordRentMonitoring,
   getLandlordTenants,
 } from "@/lib/landlord/data";
+import { getLandlordRentalAnalytics } from "@/lib/landlord/rental-analytics";
 
 export type AssistantReply = {
   answer: string;
@@ -32,7 +33,7 @@ export type AssistantConversationMessage = {
 function getRelatedPage(question: string) {
   const normalized = question.toLowerCase();
 
-  if (/analytics|trend|performance|portfolio health|forecast|collection rate|occupancy rate/.test(normalized)) return { relatedHref: "/landlord/ai-rental-analytics", relatedLabel: "View AI Rental Analytics" };
+  if (/analytics|trend|performance|portfolio health|forecast|collection rate|occupancy rate/.test(normalized)) return { relatedHref: "/landlord/reports", relatedLabel: "View Reports" };
   if (/maintenance|repair|broken|issue/.test(normalized)) return { relatedHref: "/landlord/maintenance", relatedLabel: "View Maintenance" };
   if (/payment|gcash|cash|receipt|proof|collection/.test(normalized)) return { relatedHref: "/landlord/payments", relatedLabel: "View Payments" };
   if (/rent|overdue|balance|obligation|due date/.test(normalized)) return { relatedHref: "/landlord/rent-monitoring", relatedLabel: "View Rent Monitoring" };
@@ -47,22 +48,23 @@ function getRelatedPage(question: string) {
 
 /** Loads all operational records through the signed-in landlord's Supabase/RLS scope. */
 async function loadAuthorizedLandlordRecords() {
-  const [tenants, payments, maintenance, obligations, notifications] = await Promise.all([
+  const [tenants, payments, maintenance, obligations, notifications, rentalAnalytics] = await Promise.all([
     getLandlordTenants(),
     getLandlordPayments(),
     getLandlordMaintenanceRequests(),
     getLandlordRentMonitoring(),
     getLandlordNotifications(),
+    getLandlordRentalAnalytics(),
   ]);
 
-  return { tenants, payments, maintenance, obligations, notifications };
+  return { tenants, payments, maintenance, obligations, notifications, rentalAnalytics };
 }
 
 /** Converts RLS-authorized landlord records into the limited context sent to the AI service. */
 function createAssistantContext(
   records: Awaited<ReturnType<typeof loadAuthorizedLandlordRecords>>,
 ): RentSpaceAssistantContext {
-  const { tenants, payments, maintenance, obligations, notifications } = records;
+  const { tenants, payments, maintenance, obligations, notifications, rentalAnalytics } = records;
   const overdueObligations = obligations.filter((item) => item.dueStatus === "overdue" && item.paymentStatus !== "paid" && item.balance > 0);
 
   return {
@@ -77,6 +79,34 @@ function createAssistantContext(
       overdueObligations: overdueObligations.length,
       overdueBalance: overdueObligations.reduce((sum, item) => sum + item.balance, 0),
       unreadNotifications: notifications.filter((item) => !item.isRead).length,
+    },
+    rentalAnalytics: {
+      currentMonth: rentalAnalytics.currentMonthLabel,
+      expectedRent: rentalAnalytics.expectedRent,
+      collectedRent: rentalAnalytics.collectedRent,
+      outstandingBalance: rentalAnalytics.outstandingBalance,
+      collectionRate: rentalAnalytics.collectionRate,
+      occupancyRate: rentalAnalytics.occupancyRate,
+      occupiedSpaces: rentalAnalytics.occupiedSpaces,
+      availableSpaces: rentalAnalytics.availableSpaces,
+      overdueTenants: rentalAnalytics.overdueTenants,
+      pendingPayments: rentalAnalytics.pendingPayments,
+      openMaintenanceRequests: rentalAnalytics.openMaintenanceRequests,
+      averageResolutionDays: rentalAnalytics.averageResolutionDays,
+      sixMonthTrend: rentalAnalytics.trends,
+      largestOverdueBalances: rentalAnalytics.overdueRecords.slice(0, 10).map((item) => ({
+        tenantName: item.tenantName,
+        location: item.location,
+        dueDate: item.dueDate,
+        balance: item.balance,
+      })),
+      oldestMaintenanceRequests: rentalAnalytics.maintenanceRisks.slice(0, 10).map((item) => ({
+        category: item.category,
+        tenantName: item.tenantName,
+        location: item.location,
+        status: item.status,
+        ageDays: item.ageDays,
+      })),
     },
     tenants: tenants.slice(0, 100).map((item) => ({
       name: `${item.firstName} ${item.lastName}`.trim(),

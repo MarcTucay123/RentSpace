@@ -62,7 +62,7 @@ export function AiAssistantChat({ landlordName, prompts, initialGeneratedAt }: A
     {
       id: "welcome",
       role: "assistant",
-      body: `Hi ${landlordName}. I’m the RentSpace Assistant. I can review your authorized RentSpace records, recommend operational next steps, prioritize follow-ups, and draft Tenant messages. I remain read-only and system-scoped. What would you like help with?`,
+      body: `Hi ${landlordName}. I’m the RentSpace Assistant. I can interpret your verified rental reports and trends, review authorized RentSpace records, recommend operational next steps, prioritize follow-ups, and draft tenant messages. I remain read-only and system-scoped. What would you like help with?`,
       generatedAt: initialGeneratedAt,
     },
   ]);
