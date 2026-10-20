@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AiInsightsPopup } from "@/components/landlord/ai-insights-popup";
 import { generateRentalAnalyticsInsights } from "@/lib/api/openrouter/rental-analytics";
 import { requireLandlordAccess } from "@/lib/auth/utils";
 import { getEnabledFeatureKeys } from "@/lib/features/access";
@@ -31,13 +32,7 @@ async function AiInsights({ analytics }: { analytics: RentalAnalyticsSnapshot })
     console.error("AI Rental Analytics dashboard interpretation failed:", error);
   }
 
-  return insights
-    ? <div className="mt-4 whitespace-pre-line text-sm leading-7 text-[var(--color-dormmate-text)]">{insights}</div>
-    : (
-        <div className="mt-4 rounded-[1rem] border border-[#d7dfdc] bg-[#f5f8f7] p-4 text-sm leading-6 text-[var(--color-dormmate-muted)]">
-          Live AI insights could not be loaded. All verified metrics, trends, and priority records on this dashboard remain available.
-        </div>
-      );
+  return <AiInsightsPopup insights={insights} generatedAt={analytics.generatedAt} />;
 }
 
 function TrendChart({ trends }: { trends: RentalAnalyticsSnapshot["trends"] }) {
@@ -127,13 +122,7 @@ export default async function LandlordDashboardPage() {
       <TrendChart trends={analytics.trends} />
 
       {aiEnabled ? (
-        <section className="rounded-[1.35rem] border border-[#cbd9d5] bg-white p-4 shadow-[var(--shadow)] sm:p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-dormmate-primary)]">AI insights</p><h2 className="mt-1.5 text-xl font-bold text-[var(--color-dormmate-text-strong)]">Portfolio briefing</h2><p className="mt-1 text-xs text-[var(--color-dormmate-muted)]">Generated from aggregate verified metrics; no tenant identities or raw descriptions are sent.</p></div>
-            <Link href="/landlord/ai-assistant" className="text-sm font-semibold text-[var(--color-dormmate-primary)] hover:underline">Ask a follow-up →</Link>
-          </div>
-          <AiInsights analytics={analytics} />
-        </section>
+        <AiInsights analytics={analytics} />
       ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Operational action center">

@@ -13,7 +13,7 @@ RentSpace is a role-based dormitory and apartment management application built f
 - Maintenance requests with photo attachments
 - Direct messaging and notifications
 - Monthly reports with deterministic KPIs, rental ledgers, payment and maintenance summaries, and CSV export
-- AI Rental Analytics landlord dashboard with verified KPIs, six-month trends, occupancy statistics, operational priorities, and AI-generated portfolio insights
+- AI Rental Analytics landlord dashboard with verified KPIs, six-month trends, occupancy statistics, operational priorities, and a dismissible AI-generated insights pop-up
 - OpenRouter-powered, read-only landlord assistant that interprets verified reports, six-month trends, and operational records through natural-language questions
 - Profile photos and account administration
 - Supabase Row Level Security policies and database constraints
