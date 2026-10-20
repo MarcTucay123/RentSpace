@@ -6,7 +6,6 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import type { Profile } from "@/lib/auth/types";
 import { BrandLogo } from "@/components/brand/brand-logo";
-import { ProfileAvatar } from "@/components/profile/profile-avatar";
 import { PortalAutoRefresh } from "@/components/layout/portal-auto-refresh";
 
 import { LogoutButton } from "./logout-button";
@@ -19,7 +18,6 @@ type NavItem = {
 
 type AppShellProps = {
   profile: Profile;
-  profileAssignmentLabel?: string | null;
   title: string;
   subtitle: string;
   navItems: NavItem[];
@@ -77,28 +75,15 @@ function NavigationLinks({
   );
 }
 
-function AccountSection({ profile, assignmentLabel, dark = false }: { profile: Profile; assignmentLabel?: string | null; dark?: boolean }) {
-  const displayName = `${profile.first_name} ${profile.last_name}`.trim();
-  const previewLabel = profile.role === "tenant" ? assignmentLabel ?? "No current assignment" : `${profile.role.charAt(0).toUpperCase()}${profile.role.slice(1)} account`;
-
+function SidebarFooter({ dark = false }: { dark?: boolean }) {
   return (
-    <>
-      <div className={`mt-5 h-px ${dark ? "bg-white/15" : "bg-[#e0e1dd]"}`} />
-      <div className={`mt-5 flex min-w-0 items-center gap-3 rounded-[16px] px-2 py-1 text-sm ${dark ? "text-[#b9ceca]" : "text-[#415a77]"}`}>
-        <ProfileAvatar photoUrl={profile.profile_photo_url} name={displayName} assignmentLabel={previewLabel} assignmentPrefix={profile.role === "tenant" ? "Assigned to" : "Account"} className="h-11 w-11" />
-        <div className="min-w-0">
-          <div className={`truncate font-semibold ${dark ? "text-white" : "text-[#0d1b2a]"}`}>{displayName}</div>
-          <div className="truncate">{profile.email ?? "No email set"}</div>
-        </div>
-      </div>
-      <div className="mt-3">
-        <LogoutButton dark={dark} />
-      </div>
-    </>
+    <div className="mt-5">
+      <LogoutButton dark={dark} />
+    </div>
   );
 }
 
-export function AppShell({ profile, profileAssignmentLabel, title, subtitle, navItems, children }: AppShellProps) {
+export function AppShell({ profile, title, subtitle, navItems, children }: AppShellProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const totalAttentionCount = navItems.reduce((total, item) => total + (item.badgeCount ?? 0), 0);
@@ -248,7 +233,7 @@ export function AppShell({ profile, profileAssignmentLabel, title, subtitle, nav
             <p className="mt-1 text-sm font-semibold text-white">{title}</p>
           </div>
           <NavigationLinks navItems={navItems} pathname={pathname} dark />
-          <AccountSection profile={profile} assignmentLabel={profileAssignmentLabel} dark />
+          <SidebarFooter dark />
         </aside>
 
         <main data-portal-main className="min-w-0">{children}</main>
@@ -289,7 +274,7 @@ export function AppShell({ profile, profileAssignmentLabel, title, subtitle, nav
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
             <NavigationLinks navItems={navItems} pathname={pathname} onNavigate={() => setMenuOpen(false)} dark />
-            <AccountSection profile={profile} assignmentLabel={profileAssignmentLabel} dark />
+            <SidebarFooter dark />
           </div>
         </aside>
       </div>
