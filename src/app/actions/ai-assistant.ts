@@ -33,7 +33,7 @@ export type AssistantConversationMessage = {
 function getRelatedPage(question: string) {
   const normalized = question.toLowerCase();
 
-  if (/analytics|trend|performance|portfolio health|forecast|collection rate|occupancy rate/.test(normalized)) return { relatedHref: "/landlord/reports", relatedLabel: "View Reports" };
+  if (/analytics|trend|performance|portfolio health|forecast|collection rate|occupancy rate/.test(normalized)) return { relatedHref: "/landlord/ai-rental-analytics", relatedLabel: "View AI Rental Analytics" };
   if (/maintenance|repair|broken|issue/.test(normalized)) return { relatedHref: "/landlord/maintenance", relatedLabel: "View Maintenance" };
   if (/payment|gcash|cash|receipt|proof|collection/.test(normalized)) return { relatedHref: "/landlord/payments", relatedLabel: "View Payments" };
   if (/rent|overdue|balance|obligation|due date/.test(normalized)) return { relatedHref: "/landlord/rent-monitoring", relatedLabel: "View Rent Monitoring" };

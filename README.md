@@ -13,6 +13,7 @@ RentSpace is a role-based dormitory and apartment management application built f
 - Maintenance requests with photo attachments
 - Direct messaging and notifications
 - Monthly reports with deterministic KPIs, rental ledgers, payment and maintenance summaries, and CSV export
+- AI Rental Analytics visual dashboard with verified KPIs, six-month trends, occupancy statistics, and prioritized risk records
 - OpenRouter-powered, read-only landlord assistant that interprets verified reports, six-month trends, and operational records through natural-language questions
 - Profile photos and account administration
 - Supabase Row Level Security policies and database constraints
@@ -50,6 +51,8 @@ OPENROUTER_MODEL=openrouter/free
 `SUPABASE_SECRET_KEY` is used only by privileged server-side account-management and maintenance scripts, including creating pending Admin registration requests. The legacy `SUPABASE_SERVICE_ROLE_KEY` name is also supported. Never expose this secret in browser code, commit it to Git, or prefix it with `NEXT_PUBLIC_`.
 
 `OPENROUTER_API_KEY` enables the Landlord AI Assistant, including conversational interpretation of verified rental analytics. `OPENROUTER_MODEL` defaults to `openrouter/free`; the server rejects any configured model that is not `openrouter/free` or suffixed with `:free`, preventing accidental paid-model usage. Keep the key server-only and configure both variables in each Vercel environment. The assistant receives a limited copy of the signed-in Landlord's authorized operational records and deterministic analytics, and it is not given tools that can modify records.
+
+The responsibilities are intentionally separated: **Reports** provides detailed monthly records and CSV exports, **AI Rental Analytics** visualizes verified metrics and trends without generating commentary, and the **AI Assistant** provides natural-language interpretation of the same authorized analytics data.
 
 ### AI API structure
 
