@@ -41,9 +41,11 @@ function NavigationLinks({
   onNavigate?: () => void;
   dark?: boolean;
 }) {
+  const sidePanelItems = navItems.filter((item) => item.label !== "Notifications" && item.label !== "Profile Settings");
+
   return (
     <nav aria-label="Portal navigation" className="grid gap-2">
-      {navItems.map((item, index) => (
+      {sidePanelItems.map((item, index) => (
         <Link
           key={`${item.href}-${item.label}-${index}`}
           href={item.href}
