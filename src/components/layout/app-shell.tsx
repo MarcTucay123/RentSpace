@@ -185,7 +185,7 @@ export function AppShell({ profile, title, subtitle, navItems, children }: AppSh
           ) : null}
         </button>
 
-        <div className="shrink-0 rounded-[12px] border border-[#d8e5e2] bg-gradient-to-br from-white to-[#eef5f3] px-2 py-1.5 shadow-sm" aria-label="RentSpace product identity">
+        <div className="shrink-0 px-1 py-1" aria-label="RentSpace product identity">
           <BrandLogo className="h-auto w-[96px] sm:w-[150px]" priority />
         </div>
 

@@ -136,7 +136,16 @@ export function FloatingAiAssistant({ landlordName }: { landlordName: string }) 
 
       <button type="button" aria-label={open ? "Close RentSpace AI Assistant" : "Open RentSpace AI Assistant"} aria-expanded={open} onClick={() => setOpen((current) => !current)} className="group relative grid h-14 w-14 place-items-center rounded-full bg-[#294d4b] text-white shadow-[0_12px_30px_rgba(13,27,42,0.35)] ring-4 ring-white/80 transition hover:-translate-y-1 hover:bg-[#315a57] sm:h-16 sm:w-16">
         <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-[#f4cf58]" aria-hidden="true" />
-        {open ? <span aria-hidden="true" className="text-2xl leading-none">×</span> : <span className="text-base font-black tracking-tight sm:text-lg" aria-hidden="true">AI</span>}
+        {open ? (
+          <span aria-hidden="true" className="text-2xl leading-none">×</span>
+        ) : (
+          <span aria-hidden="true" className="relative grid h-8 w-8 place-items-center sm:h-9 sm:w-9">
+            <svg viewBox="0 0 36 36" className="absolute inset-0 h-full w-full fill-white" focusable="false">
+              <path d="M8.5 4.5h19A5.5 5.5 0 0 1 33 10v12a5.5 5.5 0 0 1-5.5 5.5H17l-7.7 4.2a1 1 0 0 1-1.48-.88V27.46A5.5 5.5 0 0 1 3 22V10a5.5 5.5 0 0 1 5.5-5.5Z" />
+            </svg>
+            <span className="relative -translate-y-px text-[10px] font-black tracking-[-0.04em] text-[#294d4b] sm:text-[11px]">AI</span>
+          </span>
+        )}
       </button>
     </div>
   );
